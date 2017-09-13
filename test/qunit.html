@@ -9,26 +9,26 @@
     </head>
     <body>
         <div id="qunit"></div>
-        <div id="qunit-fixtur" class="multimonth-calendar"></div>
+        <div id="qunit-fixture" class="multimonth-calendar"></div>
         <script src="../src/multimonth-calendar.js"></script>
         <script src="https://code.jquery.com/qunit/qunit-2.4.0.js"></script>
         <script>
             var C = MultiMonthCalendar;
-            var range00 = C.newRange(C.newCalDate(2016, 3, 25), C.newCalDate(2016, 3, 31));
-            var range01 = C.newRange(C.newCalDate(2016, 4, 2), C.newCalDate(2016, 4, 6));
-            var range02 = C.newRange(C.newCalDate(2016, 4, 20), C.newCalDate(2016, 5, 6));
-            var range10 = C.newRange(C.newCalDate(2016, 3, 30), C.newCalDate(2016, 4, 4));
-            var range11 = C.newRange(C.newCalDate(2016, 4, 12), C.newCalDate(2016, 4, 15));
-            var range12 = C.newRange(C.newCalDate(2016, 4, 20), C.newCalDate(2016, 4, 23));
-            var range20 = C.newRange(C.newCalDate(2016, 4, 4), C.newCalDate(2016, 4, 4));
-            var range30 = C.newRange(C.newCalDate(2016, 4, 8), C.newCalDate(2016, 4, 15));
-            var range40 = C.newRange(C.newCalDate(2016, 4, 14), C.newCalDate(2016, 4, 14));
-            var range41 = C.newRange(C.newCalDate(2016, 4, 16), C.newCalDate(2016, 4, 16));
-            var range42 = C.newRange(C.newCalDate(2016, 4, 18), C.newCalDate(2016, 4, 18));
-            var range50 = C.newRange(C.newCalDate(2016, 4, 20), C.newCalDate(2016, 4, 24));
-            var range51 = C.newRange(C.newCalDate(2016, 4, 29), C.newCalDate(2016, 5, 15));        
+            var range00 = C.range(C.date(2016, 3, 25), C.date(2016, 3, 31));
+            var range01 = C.range(C.date(2016, 4, 2), C.date(2016, 4, 6));
+            var range02 = C.range(C.date(2016, 4, 20), C.date(2016, 5, 6));
+            var range10 = C.range(C.date(2016, 3, 30), C.date(2016, 4, 4));
+            var range11 = C.range(C.date(2016, 4, 12), C.date(2016, 4, 15));
+            var range12 = C.range(C.date(2016, 4, 20), C.date(2016, 4, 23));
+            var range20 = C.range(C.date(2016, 4, 4), C.date(2016, 4, 4));
+            var range30 = C.range(C.date(2016, 4, 8), C.date(2016, 4, 15));
+            var range40 = C.range(C.date(2016, 4, 14), C.date(2016, 4, 14));
+            var range41 = C.range(C.date(2016, 4, 16), C.date(2016, 4, 16));
+            var range42 = C.range(C.date(2016, 4, 18), C.date(2016, 4, 18));
+            var range50 = C.range(C.date(2016, 4, 20), C.date(2016, 4, 24));
+            var range51 = C.range(C.date(2016, 4, 29), C.date(2016, 5, 15));        
 
-            window.calendar = new MultiMonthCalendar("qunit-fixtur", 10, 2016,
+            window.calendar = new MultiMonthCalendar("qunit-fixture", 10, 2016,
                 [
                     [0, "Posiedzenie 13", [range00, range01, range02]],
                     [1, "Posiedzenie 14", [range10, range11, range12]],

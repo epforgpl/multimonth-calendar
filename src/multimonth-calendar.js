@@ -439,6 +439,14 @@
        this.date = new Date(year, month - 1, day);  
     };
     
+    /**
+     * Returns a JS Date representation of this CalDate.
+     * @returns {Date} a JS Date representation.
+     */
+    CalDate.prototype.toJSDate = function () {
+        return new Date(this.date.getTime());
+    };
+    
     
     
     /*
@@ -876,23 +884,23 @@
     
     
     
-    MultiMonthCalendar.newMonthYear = function (month, year) {
+    MultiMonthCalendar.monthYear = function (month, year) {
         return new MonthYear(month, year);        
     };
     
-    MultiMonthCalendar.newEventList = function () {
+    MultiMonthCalendar.eventList = function () {
         return new EventList();
     };
     
-    MultiMonthCalendar.newEvent = function (id, title, ranges) {
+    MultiMonthCalendar.event = function (id, title, ranges) {
         return new Event(id, title, ranges);        
     };
     
-    MultiMonthCalendar.newRange = function (start, end) {
+    MultiMonthCalendar.range = function (start, end) {
         return new Range(start, end);
     };
     
-    MultiMonthCalendar.newCalDate = function (year, month, day) {
+    MultiMonthCalendar.date = function (year, month, day) {
         return new CalDate(year, month, day);
     };
     
