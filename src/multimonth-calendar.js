@@ -109,7 +109,6 @@
      */
     MultiMonthCalendar.prototype.renderCalendar = function () {
         var inner = document.createElement('div');
-        inner.classList.add('general-wrapper');
 
         // Back button.
         inner.appendChild(this.createNavButton(false));
@@ -153,7 +152,7 @@
      * @returns {Element} the button element.
      */
     MultiMonthCalendar.prototype.createNavButton = function (isForward) {
-        var div = this.createNewElement('div', 'nav');
+        var div = this.createNewElement('div', 'mmc-nav');
         var span = document.createElement('span');
 
         var _this = this;
@@ -172,7 +171,7 @@
      * @returns {Element} the spacer div element.
      */
     MultiMonthCalendar.prototype.createMonthSpacer = function () {
-        var div = this.createNewElement("div", "month-spacer");
+        var div = this.createNewElement("div", "mmc-month-spacer");
         div.innerHTML = "&nbsp;";
         return div;
     };
@@ -186,7 +185,7 @@
      * @return {Element} the calendar block for a single month.
      */
     MultiMonthCalendar.prototype.createMonthWrapper = function (monthYear, eventList) {
-        var div = this.createNewElement("div", "month-wrapper");
+        var div = this.createNewElement("div", "mmc-month");
         div.appendChild(this.createMonthNameWrap(monthYear));
         div.appendChild(this.createMonthTableWrap(monthYear, eventList));
         return div;
@@ -286,7 +285,7 @@
             for (var i = 0; i < 7; i++) {
                 if (monthYear.getWeekDay(day) === i) {
                     var td = document.createElement("td");
-                    td.classList.add('calendar-day');
+                    td.classList.add('mmc-calendar-day');
                     var isWeekend = ((i === 0) || (i === 6));
                     if (isWeekend) {
                         td.classList.add('weekend');
@@ -314,7 +313,7 @@
                     weekRow.appendChild(td);
                     day++;
                 } else {
-                    weekRow.innerHTML += "<td class='calendar-day-other-month'></td>";
+                    weekRow.innerHTML += "<td class='mmc-calendar-day other-month'></td>";
                 }
                 if (day > dayCount) {
                     break;
