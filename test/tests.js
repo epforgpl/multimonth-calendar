@@ -1,5 +1,5 @@
 QUnit.test("test MonthYear.shift", function (assert) {
-    var monthYear = EPMultiMonthCalendar.newMonthYear(3, 2017);
+    var monthYear = MultiMonthCalendar.newMonthYear(3, 2017);
     var shiftedMonthYear = monthYear.shift(5);
     assert.ok(shiftedMonthYear.month === 8);
     assert.ok(shiftedMonthYear.year === 2017);
@@ -19,24 +19,24 @@ QUnit.test("test MonthYear.shift", function (assert) {
 
 QUnit.test("test MonthYear.getNumDays", function (assert) {
     // February 2017
-    var monthYear = EPMultiMonthCalendar.newMonthYear(1, 2017);
+    var monthYear = MultiMonthCalendar.newMonthYear(1, 2017);
     var numDays = monthYear.getNumDays();
     assert.ok(numDays === 28);
     
     // January 2015
-    monthYear = EPMultiMonthCalendar.newMonthYear(0, 2015);
+    monthYear = MultiMonthCalendar.newMonthYear(0, 2015);
     numDays = monthYear.getNumDays();
     assert.ok(numDays === 31);
     
     // February 2020
-    monthYear = EPMultiMonthCalendar.newMonthYear(1, 2020);
+    monthYear = MultiMonthCalendar.newMonthYear(1, 2020);
     numDays = monthYear.getNumDays();
     assert.ok(numDays === 29);
 });
 
 QUnit.test("test MonthYear.getWeekDay", function (assert) {
     // September 2017
-    var monthYear = EPMultiMonthCalendar.newMonthYear(8, 2017);
+    var monthYear = MultiMonthCalendar.newMonthYear(8, 2017);
     var weekDay = monthYear.getWeekDay(12);
     assert.ok(weekDay === 2);
     
@@ -48,7 +48,7 @@ QUnit.test("test MonthYear.getWeekDay", function (assert) {
 });
 
 QUnit.test("test Event.isOverlapping", function (assert) {
-    var C = EPMultiMonthCalendar;
+    var C = MultiMonthCalendar;
     var event1 = C.newEvent(1, "Posiedzenie 14", [
         C.newRange(C.newCalDate(2016, 3, 9), C.newCalDate(2016, 3, 24))
     ]);
@@ -75,7 +75,7 @@ QUnit.test("test Event.isOverlapping", function (assert) {
 });
 
 QUnit.test("test EventList.assignIndexAndColor", function (assert) {
-    var C = EPMultiMonthCalendar;
+    var C = MultiMonthCalendar;
     var list = C.newEventList();
     var event0 = C.newEvent(0, "Posiedzenie 13", [
         C.newRange(C.newCalDate(2016, 3, 5), C.newCalDate(2016, 3, 19))
@@ -159,7 +159,7 @@ QUnit.test("test EventList.assignIndexAndColor", function (assert) {
 });
 
 QUnit.test("test EventList.getSublistOverlapping", function (assert) {
-    var C = EPMultiMonthCalendar;
+    var C = MultiMonthCalendar;
     var list = C.newEventList();
     var event0 = C.newEvent(0, "Posiedzenie 13", [
         C.newRange(C.newCalDate(2016, 3, 5), C.newCalDate(2016, 3, 19))

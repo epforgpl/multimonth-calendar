@@ -9,11 +9,11 @@
     </head>
     <body>
         <div id="qunit"></div>
-        <div id="qunit-fixture" class="ep-multimonth-calendar"></div>
+        <div id="qunit-fixtur" class="multimonth-calendar"></div>
         <script src="../src/multimonth-calendar.js"></script>
         <script src="https://code.jquery.com/qunit/qunit-2.4.0.js"></script>
         <script>
-            var C = EPMultiMonthCalendar;
+            var C = MultiMonthCalendar;
             var range00 = C.newRange(C.newCalDate(2016, 3, 25), C.newCalDate(2016, 3, 31));
             var range01 = C.newRange(C.newCalDate(2016, 4, 2), C.newCalDate(2016, 4, 6));
             var range02 = C.newRange(C.newCalDate(2016, 4, 20), C.newCalDate(2016, 5, 6));
@@ -28,7 +28,7 @@
             var range50 = C.newRange(C.newCalDate(2016, 4, 20), C.newCalDate(2016, 4, 24));
             var range51 = C.newRange(C.newCalDate(2016, 4, 29), C.newCalDate(2016, 5, 15));        
 
-            window.calendar = new EPMultiMonthCalendar("qunit-fixture", 10, 2016,
+            window.calendar = new MultiMonthCalendar("qunit-fixtur", 10, 2016,
                 [
                     [0, "Posiedzenie 13", [range00, range01, range02]],
                     [1, "Posiedzenie 14", [range10, range11, range12]],

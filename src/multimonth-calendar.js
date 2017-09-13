@@ -17,9 +17,9 @@
      *     start (Date), end (Date).
      * @param {function} eventClickCallback a function executed when user clicks on the display of
      *     an event.
-     * @returns {EPMultiMonthCalendar} an instance of the calendar.
+     * @returns {MultiMonthCalendar} an instance of the calendar.
      */
-    var EPMultiMonthCalendar = function (containerId, month, year, events, eventClickCallback) {
+    var MultiMonthCalendar = function (containerId, month, year, events, eventClickCallback) {
         this.containerId = containerId;
         this.start = new MonthYear(month, year);
         this.count = 1;
@@ -66,11 +66,11 @@
     /**
      * Provides responsive capabilities whenever the window resizes.
      *
-     * @param {EPMultiMonthCalendar} _this the EPMultiMonthCalendar. When the event handler fires,
+     * @param {MultiMonthCalendar} _this the MultiMonthCalendar. When the event handler fires,
      *     "this" is the window object.
      * @returns {void}
      */
-    EPMultiMonthCalendar.prototype.resizeCallback = function(_this) {
+    MultiMonthCalendar.prototype.resizeCallback = function(_this) {
         var windowWidth = _this.getWindowWidth();
         // Whether the resize results in a screen that's wider or more narrow.
         var isEnlarged = (_this.lastWindowWidth <= windowWidth);
@@ -107,9 +107,9 @@
      *
      * @returns {void}
      */
-    EPMultiMonthCalendar.prototype.renderCalendar = function () {
+    MultiMonthCalendar.prototype.renderCalendar = function () {
         var inner = document.createElement('div');
-        inner.classList.add('ep-multimonth-calendar-inner');
+        inner.classList.add('general-wrapper');
 
         // Back button.
         inner.appendChild(this.createNavButton(false));
@@ -129,6 +129,7 @@
         inner.appendChild(this.createNavButton(true));
 
         var container = document.getElementById(this.containerId);
+        container.classList.add('multimonth-calendar');
         container.appendChild(inner);
     };
 
@@ -137,7 +138,7 @@
      *
      * @returns {void}
      */
-    EPMultiMonthCalendar.prototype.rerenderCalendar = function () {
+    MultiMonthCalendar.prototype.rerenderCalendar = function () {
         var container = document.getElementById(this.containerId);
         while (container.firstChild) {
             container.removeChild(container.firstChild);
@@ -151,8 +152,8 @@
      * @param {boolean} isForward whether the button points forward or backwards.
      * @returns {Element} the button element.
      */
-    EPMultiMonthCalendar.prototype.createNavButton = function (isForward) {
-        var div = this.createNewElement('div', 'calendar-nav');
+    MultiMonthCalendar.prototype.createNavButton = function (isForward) {
+        var div = this.createNewElement('div', 'nav');
         var span = document.createElement('span');
 
         var _this = this;
@@ -170,8 +171,8 @@
      *
      * @returns {Element} the spacer div element.
      */
-    EPMultiMonthCalendar.prototype.createMonthSpacer = function () {
-        var div = this.createNewElement("div", "calendar-spacer");
+    MultiMonthCalendar.prototype.createMonthSpacer = function () {
+        var div = this.createNewElement("div", "month-spacer");
         div.innerHTML = "&nbsp;";
         return div;
     };
@@ -184,8 +185,8 @@
      *     not only in the current block.
      * @return {Element} the calendar block for a single month.
      */
-    EPMultiMonthCalendar.prototype.createMonthWrapper = function (monthYear, eventList) {
-        var div = this.createNewElement("div", "calendar-wrap");
+    MultiMonthCalendar.prototype.createMonthWrapper = function (monthYear, eventList) {
+        var div = this.createNewElement("div", "month-wrapper");
         div.appendChild(this.createMonthNameWrap(monthYear));
         div.appendChild(this.createMonthTableWrap(monthYear, eventList));
         return div;
@@ -197,9 +198,9 @@
      * @param {MonthYear} monthYear the month-year to render the name for.
      * @return {Element} a div containing the month-year name.
      */
-    EPMultiMonthCalendar.prototype.createMonthNameWrap = function (monthYear) {
-        var div = this.createNewElement("div", "calendar-month-name");
-        var span = this.createNewElement("span", "month-name");
+    MultiMonthCalendar.prototype.createMonthNameWrap = function (monthYear) {
+        var div = this.createNewElement("div", "month-name");
+        var span = document.createElement("span");
         span.innerHTML = this.getMonthName(monthYear.month) + " " + monthYear.year;
         div.appendChild(span);
         return div;
@@ -211,7 +212,7 @@
      * @param {Number} monthNumber the number of the month (0 - 11).
      * @return {string} the name of the month.
      */
-    EPMultiMonthCalendar.prototype.getMonthName = function (monthNumber) {
+    MultiMonthCalendar.prototype.getMonthName = function (monthNumber) {
         for (var i = 0; i < this.monthNames.length; i++) {
             if (i === monthNumber) {
                 return this.monthNames[i];
@@ -227,13 +228,11 @@
      *     not only in the current block.
      * @return {Element} a calendar table with days for a single month.
      */
-    EPMultiMonthCalendar.prototype.createMonthTableWrap = function (monthYear, eventList) {
-        var div = this.createNewElement("div", "calendar-month");
-        var table = this.createNewElement("table", "calendar");
+    MultiMonthCalendar.prototype.createMonthTableWrap = function (monthYear, eventList) {
+        var table = document.createElement("table");
         table.appendChild(this.createMonthTableHead());
         table.appendChild(this.createMonthTableBody(monthYear, eventList));
-        div.appendChild(table);
-        return div;
+        return table;
     };
 
     /**
@@ -241,9 +240,9 @@
      *
      * @return {Element} a calendar thead element.
      */
-    EPMultiMonthCalendar.prototype.createMonthTableHead = function () {
-        var thead = this.createNewElement("thead", "calendar-header");
-        var tr = this.createNewElement("tr", "calendar-row");
+    MultiMonthCalendar.prototype.createMonthTableHead = function () {
+        var thead = document.createElement("thead");
+        var tr = document.createElement("tr");
 
         for (var i = 0; i < this.daysShort.length; i++) {
             tr.innerHTML += "<th>" + this.daysShort[i] + "</th>";
@@ -261,8 +260,8 @@
      *     not only in the current block.
      * @return {Element} a calendar table with days for a single month.
      */
-    EPMultiMonthCalendar.prototype.createMonthTableBody = function (monthYear, eventList) {
-        var tbody = this.createNewElement("tbody", "calendar-body");
+    MultiMonthCalendar.prototype.createMonthTableBody = function (monthYear, eventList) {
+        var tbody = document.createElement("tbody");
         this.distributeDays(monthYear, tbody, eventList);
         return tbody;
     };
@@ -276,7 +275,7 @@
      *     not only in the current block.
      * @return {Element} a calendar table with days for a single month.
      */
-    EPMultiMonthCalendar.prototype.distributeDays = function (monthYear, tbody, eventList) {
+    MultiMonthCalendar.prototype.distributeDays = function (monthYear, tbody, eventList) {
         var _this = this;
         var day = 1;
         var dayCount = monthYear.getNumDays();
@@ -308,7 +307,7 @@
                     var dayNumDiv = document.createElement('div');
                     dayNumDiv.innerHTML = day;
                     td.appendChild(dayNumDiv);
-                    for (var j = 0; j <= maxEventIndex; j++) {
+                    for (var j = maxEventIndex; j >= 0; j--) {
                         td.appendChild(this.createNewElement('div', 'calendar-day-spacer'));
                         td.appendChild(this.createEventIndicator(eventsOnDay, j));
                     }
@@ -336,7 +335,7 @@
      * @returns {Element} an HTML element representing an event (or lack thereof) happening
      *     on a single day.
      */
-    EPMultiMonthCalendar.prototype.createEventIndicator = function (eventsOnDay, indicatorIndex) {
+    MultiMonthCalendar.prototype.createEventIndicator = function (eventsOnDay, indicatorIndex) {
         var eventIndicator = document.createElement('div');
         eventIndicator.classList.add('calendar-day-indicator');
         // Find event (if any) that matches this indicator's index.
@@ -363,7 +362,7 @@
      * @param {string} id the id of the event, to be passed to the callback function.
      * @return {function} a closure invoking the callback passed to the calendar constructor.
      */
-    EPMultiMonthCalendar.prototype.createOnclickHandler = function (id) {
+    MultiMonthCalendar.prototype.createOnclickHandler = function (id) {
         var _this = this;
         return function() {
             _this.callback(id);
@@ -377,7 +376,7 @@
      *
      * @returns {EventList} the events to be drawn with the current calendar params.
      */
-    EPMultiMonthCalendar.prototype.getEventsOverlappingCalendar = function () {
+    MultiMonthCalendar.prototype.getEventsOverlappingCalendar = function () {
         var startOfCalendar = new CalDate(this.start.year, this.start.month + 1, 1);
         var endOfCalendar = this.getCalendarEndDate();
         return this.eventList.getSublistOverlapping(new Range(startOfCalendar, endOfCalendar),true);
@@ -388,7 +387,7 @@
      *
      * @returns {Date} the date ending the calendar currently drawn / being drawn.
      */
-    EPMultiMonthCalendar.prototype.getCalendarEndDate = function () {
+    MultiMonthCalendar.prototype.getCalendarEndDate = function () {
         var lastMonth = this.start.shift(this.count);
         return new CalDate(lastMonth.year, lastMonth.month + 1, lastMonth.getNumDays());
     };
@@ -398,7 +397,7 @@
      *
      * @returns {Number} the current window width.
      */
-    EPMultiMonthCalendar.prototype.getWindowWidth = function () {
+    MultiMonthCalendar.prototype.getWindowWidth = function () {
         var doc = window.document;
         var docwindowProp = doc.documentElement["clientWidth"];
         return ((doc.compatMode === "CSS1Compat") && docwindowProp)
@@ -413,7 +412,7 @@
      * @param {string} className element class name.
      * @return {Element} a created HTML element.
      */
-    EPMultiMonthCalendar.prototype.createNewElement = function (element, className) {
+    MultiMonthCalendar.prototype.createNewElement = function (element, className) {
         var result = document.createElement(element);
         result.classList.add(className);
         return result;
@@ -637,9 +636,8 @@
                 }
             }
             if (rangesOverlapping.length > 0) {
-                result.add(
-                        new Event(event.id, event.title, rangesOverlapping),
-                        this.list[i].index, this.list[i].color);
+                var newEvent = new Event(event.id, event.title, rangesOverlapping);
+                result.add(newEvent, this.list[i].index, this.list[i].color);
             }
         }
         if (shouldReindex) {
@@ -789,36 +787,7 @@
         }
         return false;
     };
-    
-    /**
-     * Returns whether this Event overlaps with another.
-     *
-     * @param {Event} event another event, to check overlapping with.
-     * @param {Range} range the time range to restrain the overlap check to.
-     * @returns {Boolean} whether the two events overlap.
-     */
-    Event.prototype.isOverlappingInRange = function (event, range) {
-        // TODO: Optimize - can do linear time.
-        for (var i = 0; i < this.parts.length; i++) {
-            var partOfThis = this.parts[i];
-            var partOfThisWithinRange = partOfThis.range.intersect(range);
-            if (partOfThisWithinRange === null) {
-                continue;
-            }
-            for (var j = 0; j < event.parts.length; j++) {
-                var partOfThat = event.parts[j];
-                var partOfThatWithinRange = partOfThat.range.intersect(range);
-                if (partOfThatWithinRange === null) {
-                    continue;
-                }
-                if (partOfThisWithinRange.isOverlapping(partOfThatWithinRange)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    };
-    
+        
     
  
     /*
@@ -908,28 +877,28 @@
     
     
     
-    EPMultiMonthCalendar.newMonthYear = function (month, year) {
+    MultiMonthCalendar.newMonthYear = function (month, year) {
         return new MonthYear(month, year);        
     };
     
-    EPMultiMonthCalendar.newEventList = function () {
+    MultiMonthCalendar.newEventList = function () {
         return new EventList();
     };
     
-    EPMultiMonthCalendar.newEvent = function (id, title, ranges) {
+    MultiMonthCalendar.newEvent = function (id, title, ranges) {
         return new Event(id, title, ranges);        
     };
     
-    EPMultiMonthCalendar.newRange = function (start, end) {
+    MultiMonthCalendar.newRange = function (start, end) {
         return new Range(start, end);
     };
     
-    EPMultiMonthCalendar.newCalDate = function (year, month, day) {
+    MultiMonthCalendar.newCalDate = function (year, month, day) {
         return new CalDate(year, month, day);
     };
     
  
 
-    window.EPMultiMonthCalendar = EPMultiMonthCalendar;
+    window.MultiMonthCalendar = MultiMonthCalendar;
     
 })();
