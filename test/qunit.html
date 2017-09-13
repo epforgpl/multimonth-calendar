@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Multimonth Calendar Tests</title>
+        <link rel="stylesheet" href="../src/multimonth-calendar.css">
+        <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.4.0.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    </head>
+    <body>
+        <div id="qunit"></div>
+        <div id="qunit-fixture" class="ep-multimonth-calendar"></div>
+        <script src="../src/multimonth-calendar.js"></script>
+        <script src="https://code.jquery.com/qunit/qunit-2.4.0.js"></script>
+        <script>
+            var C = EPMultiMonthCalendar;
+            var range00 = C.newRange(C.newCalDate(2016, 3, 25), C.newCalDate(2016, 3, 31));
+            var range01 = C.newRange(C.newCalDate(2016, 4, 2), C.newCalDate(2016, 4, 6));
+            var range02 = C.newRange(C.newCalDate(2016, 4, 20), C.newCalDate(2016, 5, 6));
+            var range10 = C.newRange(C.newCalDate(2016, 3, 30), C.newCalDate(2016, 4, 4));
+            var range11 = C.newRange(C.newCalDate(2016, 4, 12), C.newCalDate(2016, 4, 15));
+            var range12 = C.newRange(C.newCalDate(2016, 4, 20), C.newCalDate(2016, 4, 23));
+            var range20 = C.newRange(C.newCalDate(2016, 4, 4), C.newCalDate(2016, 4, 4));
+            var range30 = C.newRange(C.newCalDate(2016, 4, 8), C.newCalDate(2016, 4, 15));
+            var range40 = C.newRange(C.newCalDate(2016, 4, 14), C.newCalDate(2016, 4, 14));
+            var range41 = C.newRange(C.newCalDate(2016, 4, 16), C.newCalDate(2016, 4, 16));
+            var range42 = C.newRange(C.newCalDate(2016, 4, 18), C.newCalDate(2016, 4, 18));
+            var range50 = C.newRange(C.newCalDate(2016, 4, 20), C.newCalDate(2016, 4, 24));
+            var range51 = C.newRange(C.newCalDate(2016, 4, 29), C.newCalDate(2016, 5, 15));        
+
+            window.calendar = new EPMultiMonthCalendar("qunit-fixture", 10, 2016,
+                [
+                    [0, "Posiedzenie 13", [range00, range01, range02]],
+                    [1, "Posiedzenie 14", [range10, range11, range12]],
+                    [2, "Posiedzenie 15", [range20]],
+                    [3, "Posiedzenie 16", [range30]],
+                    [4, "Posiedzenie 17", [range40, range41, range42]],
+                    [5, "Posiedzenie 18", [range50, range51]]
+                ],
+                function (a) { alert(a); });
+        </script>
+        <script src="tests.js"></script>
+    </body>
+  </html>
