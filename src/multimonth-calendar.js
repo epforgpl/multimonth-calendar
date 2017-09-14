@@ -25,18 +25,18 @@
         this.count = 1;
         this.daysShort = ["N", "P", "W", "Ś", "C", "P", "S"];
         this.monthNames = [
-            "styczeń",
-            "luty",
-            "marzec",
-            "kwiecień",
-            "maj",
-            "czerwiec",
-            "lipiec",
-            "sierpień",
-            "wrzesień",
-            "październik",
-            "listopad",
-            "grudzień"
+            "Styczeń",
+            "Luty",
+            "Marzec",
+            "Kwiecień",
+            "Maj",
+            "Czerwiec",
+            "Lipiec",
+            "Sierpień",
+            "Wrzesień",
+            "Październik",
+            "Listopad",
+            "Grudzień"
         ];
         this.eventList = new EventList();
         for (var i = 0; i < events.length; i++) {
@@ -49,7 +49,7 @@
         // Number of these should be number of breakpoints + 1. The first number
         // is used when window width is below 1st breakpoint; the second number
         // is used when window width is b/n 1st and 2nd breakpoint, etc. Must be increasing.
-        this.numMonthsAroundBreakpoints = [1, 2, 3, 4, 5];
+        this.numMonthsAroundBreakpoints = [1, 2, 2, 3, 3];
         this.lastWindowWidth = 0; // Initial resizeCallback call below will set it.
 
         // "_this" trick is needed b/c when resize callback is called, "this"
@@ -112,19 +112,14 @@
 
         // Back button.
         inner.appendChild(this.createNavButton(false));
-        inner.appendChild(this.createMonthSpacer());
 
         // Monthly calendars.
         var events = this.getEventsOverlappingCalendar();
         for (var i = 0; i < this.count; i++) {
             inner.appendChild(this.createMonthWrapper(this.start.shift(i), events));
-            if (i < this.count - 1) {
-                inner.appendChild(this.createMonthSpacer());
-            }
         }
 
         // Forward button.
-        inner.appendChild(this.createMonthSpacer());
         inner.appendChild(this.createNavButton(true));
 
         var container = document.getElementById(this.containerId);
@@ -162,17 +157,6 @@
         };
         span.innerHTML = (isForward ? '&#8250' : '&#8249') + ';';
         div.appendChild(span);
-        return div;
-    };
-
-    /**
-     * Create a spacer div separating neighboring monthly calendars.
-     *
-     * @returns {Element} the spacer div element.
-     */
-    MultiMonthCalendar.prototype.createMonthSpacer = function () {
-        var div = this.createNewElement("div", "mmc-month-spacer");
-        div.innerHTML = "&nbsp;";
         return div;
     };
 
@@ -294,10 +278,12 @@
                     var eventsOnDay = eventList.getSublistOverlapping(new Range(date, date), false);
                     var hasOneEvent = (eventsOnDay.length() === 1);
                     if (hasOneEvent) {
+                        td.classList.add('has-event');
                         td.classList.add('one-event');
                     }
                     var hasManyEvents = (eventsOnDay.length() > 1);
                     if (hasManyEvents) {
+                        td.classList.add('has-event');
                         td.classList.add('many-events');
                     }
                     if (hasOneEvent) {
@@ -307,7 +293,6 @@
                     dayNumDiv.innerHTML = day;
                     td.appendChild(dayNumDiv);
                     for (var j = maxEventIndex; j >= 0; j--) {
-                        td.appendChild(this.createNewElement('div', 'calendar-day-spacer'));
                         td.appendChild(this.createEventIndicator(eventsOnDay, j));
                     }
                     weekRow.appendChild(td);
@@ -415,30 +400,30 @@
         var result = document.createElement(element);
         result.classList.add(className);
         return result;
-    };    
+    };
 
 
 
     /*
      * CalDate class.
      */
-    
+
     // TODO: Move entire file to use CalDates.
 
 
 
     /**
      * A date class with more intuitive month numbering (1-12) than standard JS Date.
-     * 
+     *
      * @param {Number} year the year.
      * @param {Number} month the month (1-12).
      * @param {Number} day the day of the month (1-31).
      * @returns {CalDate}
      */
     var CalDate = function (year, month, day) {
-       this.date = new Date(year, month - 1, day);  
+        this.date = new Date(year, month - 1, day);
     };
-    
+
     /**
      * Returns a JS Date representation of this CalDate.
      * @returns {Date} a JS Date representation.
@@ -446,18 +431,18 @@
     CalDate.prototype.toJSDate = function () {
         return new Date(this.date.getTime());
     };
-    
-    
-    
+
+
+
     /*
      * Range class.
      */
-    
-    
-    
+
+
+
     /**
      * A continuous range of days.
-     * 
+     *
      * @param {CalDate} start the beginning date of the Range (inclusive).
      * @param {type} end the end date of the Range (inclusive).
      * @returns {Range}
@@ -466,10 +451,10 @@
         this.start = start.date;
         this.end = end.date;
     };
-  
+
     /**
      * Return a Range being the intersection of this Range and the argument.
-     * 
+     *
      * @param {Range} range the Range to intersect this one with.
      * @returns {Range} the Range being the intersection, or null if they are disjoint.
      */
@@ -477,25 +462,25 @@
         if (!this.isOverlapping(range)) {
             return null;
         }
-        
+
         var start = ((this.start < range.start) ? range.start : this.start);
         var end = ((this.end < range.end) ? this.end : range.end);
         return Range.fromDates(start, end);
     };
-    
+
     /**
      * Returns whether this Range and the argument Range overlap.
-     * 
+     *
      * @param {Range} range the Range to check overlapping with.
-     * @returns {Boolean} whether this Range and the argument Range overlap. 
+     * @returns {Boolean} whether this Range and the argument Range overlap.
      */
     Range.prototype.isOverlapping = function (range) {
         return ((range.start <= this.end) && (range.end >= this.start));
     };
-    
+
     /**
      * Helper for creating Ranges from JS Dates.
-     * 
+     *
      * @param {Date} start a JS Date.
      * @param {Date} end a JS Date.
      * @returns {Range}
@@ -503,7 +488,7 @@
     Range.fromDates = function (start, end) {
         var calDateStart = new CalDate(start.getFullYear(), start.getMonth() + 1, start.getDate());
         var calDateEnd = new CalDate(end.getFullYear(), end.getMonth() + 1, end.getDate());
-        return new Range(calDateStart, calDateEnd);  
+        return new Range(calDateStart, calDateEnd);
     };
 
 
@@ -734,7 +719,7 @@
 
     /**
      * Returns the EventViewModel held by this list that has the given id.
-     * 
+     *
      * @param {string} id the id to search by.
      * @returns {EventViewModel|null} the EventViewModel found, or null if not found.
      */
@@ -782,7 +767,7 @@
      * @returns {Boolean} whether the two events overlap.
      */
     Event.prototype.isOverlapping = function (event) {
-        // TODO: Optimize - can do linear time.        
+        // TODO: Optimize - can do linear time.
         for (var i = 0; i < this.parts.length; i++) {
             var partOfThis = this.parts[i];
             for (var j = 0; j < event.parts.length; j++) {
@@ -794,18 +779,18 @@
         }
         return false;
     };
-        
-    
- 
+
+
+
     /*
      * EventPart class.
      */
-    
-    
-    
+
+
+
     /**
      * Continuous part of an Event (which may consist of several non-contiguous parts).
-     * 
+     *
      * @param {string} id the id of the Event.
      * @param {Range} range the time span of this part.
      * @returns {EventPart}
@@ -816,20 +801,20 @@
         this.start = range.start;
         this.end = range.end;
     };
-    
+
     /**
      * Returns whether this EventPart and the argument EventPart overlap.
-     * 
+     *
      * @param {EventPart} eventPart the EventPart to check overlapping with.
-     * @returns {Boolean} whether this EventPart and the argument EventPart overlap. 
-     */    
+     * @returns {Boolean} whether this EventPart and the argument EventPart overlap.
+     */
     EventPart.prototype.isOverlapping = function (eventPart) {
         return ((eventPart.start <= this.end) && (eventPart.end >= this.start));
     };
-    
+
     /**
      * Comparator of EventPart, based on: first, start dates, and then, end dates.
-     * 
+     *
      * @param {EventPart} part1 the first part to compare.
      * @param {EventPart} part2 the second part to compare.
      * @returns {Number} -1, 0, 1 according to standard comparator contract.
@@ -881,31 +866,31 @@
     /*
      * Exposing constructors of inner classes (some of them only for testing purposes).
      */
-    
-    
-    
+
+
+
     MultiMonthCalendar.monthYear = function (month, year) {
-        return new MonthYear(month, year);        
+        return new MonthYear(month, year);
     };
-    
+
     MultiMonthCalendar.eventList = function () {
         return new EventList();
     };
-    
+
     MultiMonthCalendar.event = function (id, title, ranges) {
-        return new Event(id, title, ranges);        
+        return new Event(id, title, ranges);
     };
-    
+
     MultiMonthCalendar.range = function (start, end) {
         return new Range(start, end);
     };
-    
+
     MultiMonthCalendar.date = function (year, month, day) {
         return new CalDate(year, month, day);
     };
-    
- 
+
+
 
     window.MultiMonthCalendar = MultiMonthCalendar;
-    
+
 })();

@@ -1,8 +1,4 @@
 .multimonth-calendar {
-    padding: 10px;
-    border: 1px solid;
-    font-family: 'Lato', sans-serif;
-    background-color: white;
     text-align: center;
 }
 
@@ -43,45 +39,71 @@
     cursor: pointer;
 }
 
-.mmc-month-spacer {
-    float: left;
-    width: 10px;
-}
-
 .mmc-month {
     float: left;
+    margin: 0 30px;
 }
 
 .mmc-month > .month-name {
     text-align: center;
+    font-weight: 500;
 }
 
 .mmc-month > table {
-    border: 1px solid #bbb;
+    border: none;
     border-collapse: collapse;
     padding: 5px;
 }
 
+.mmc-month > table > tbody > tr > td {
+    border: 1px solid #CCC;
+}
+
+.mmc-month > table > tbody > tr > td:first-child {
+    border-left: none;
+}
+
+.mmc-month > table > tbody > tr > td:last-child {
+    border-right: none;
+}
+
+.mmc-month > table > tbody > tr:first-child > td {
+    border-top: none;
+}
+
+.mmc-month > table > tbody > tr:last-child > td {
+    border-bottom: none;
+}
+
+.mmc-month > table > tbody > tr > td:not(.other-month) {
+    border: 1px solid #CCC;
+}
+
 .mmc-month th {
-    padding: 3px 5px;
-    border-bottom: 1px solid #bbb;
+    padding: 10px 5px;
+    border: none;
     text-align: center;
     font-weight: normal;
+    color: #999;
+    font-size: 0.8em;
 }
 
 .mmc-calendar-day {
     padding: 0;
     text-align: center;
     -webkit-transition: all .2s ease;
-    border: 1px solid #bbb;
 }
 
-.mmc-calendar-day:hover {
-    background: #eee;
+.mmc-calendar-day {
+
 }
 
 .mmc-calendar-day.weekend {
     background: #eee;
+}
+
+.mmc-calendar-day.has-event *:first-child {
+    color: inherit;
 }
 
 .mmc-calendar-day.one-event {
@@ -93,11 +115,15 @@
 }
 
 .mmc-calendar-day :first-child {
-    padding: 3px 5px;
+    padding: 3px;
+    min-width: 38px;
+    color: #BBB;
 }
 
 .mmc-calendar-day > .calendar-day-indicator {
     height: 10px;
+    margin: 5px -1px;
+    position: relative;
 }
 
 .mmc-calendar-day > .calendar-day-spacer {
