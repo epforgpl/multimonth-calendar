@@ -17,9 +17,12 @@
      *     start (Date), end (Date).
      * @param {function} eventClickCallback a function executed when user clicks on the display of
      *     an event.
+     * @param {Number} weekStartsOn the number of day from which each displayed week should start.
+     *     Can be 0-6, where 0 means Sunday and 6 means Saturday.
      * @returns {MultiMonthCalendar} an instance of the calendar.
      */
-    var MultiMonthCalendar = function (containerId, month, year, events, eventClickCallback) {
+    var MultiMonthCalendar = function (containerId, month, year, events, eventClickCallback,
+            weekStartsOn) {
         this.containerId = containerId;
         this.start = new MonthYear(month, year);
         this.count = 1;
@@ -44,6 +47,7 @@
         }
         this.eventList.sort();
         this.callback = eventClickCallback;
+        this.weekStartsOn = weekStartsOn;
         // Breakpoints around which number of months shown can change. Must be increasing.
         this.breakpoints = [600, 800, 1000, 1200];
         // Number of these should be number of breakpoints + 1. The first number
@@ -227,8 +231,8 @@
         var thead = document.createElement("thead");
         var tr = document.createElement("tr");
 
-        for (var i = 0; i < this.daysShort.length; i++) {
-            tr.innerHTML += "<th>" + this.daysShort[i] + "</th>";
+        for (var i = this.weekStartsOn; i < this.weekStartsOn + 7; i++) {
+            tr.innerHTML += "<th>" + this.daysShort[i % 7] + "</th>";
         }
 
         thead.appendChild(tr);
@@ -266,11 +270,11 @@
 
         while (day < dayCount) {
             var weekRow = document.createElement("tr");
-            for (var i = 0; i < 7; i++) {
-                if (monthYear.getWeekDay(day) === i) {
+            for (var i = this.weekStartsOn; i < this.weekStartsOn + 7; i++) {
+                if (monthYear.getWeekDay(day) === (i % 7)) {
                     var td = document.createElement("td");
                     td.classList.add('mmc-calendar-day');
-                    var isWeekend = ((i === 0) || (i === 6));
+                    var isWeekend = (((i % 7) === 0) || ((i % 7) === 6));
                     if (isWeekend) {
                         td.classList.add('weekend');
                     }
