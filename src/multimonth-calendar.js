@@ -41,10 +41,7 @@
             "Listopad",
             "Grudzień"
         ];
-        this.eventList = new EventList();
-        for (var i = 0; i < events.length; i++) {
-            this.eventList.add(new Event(events[i][0], events[i][1], events[i][2], events[i][3]));
-        }
+        this.eventList = this.parseEvents(events);
         this.eventList.sort();
         this.callback = eventClickCallback;
         this.weekStartsOn = weekStartsOn;
@@ -65,6 +62,104 @@
 
         this.renderCalendar();
         this.resizeCallback(this);
+    };
+    
+    /**
+     * Validate and parse the events passed to this calendar. Throws exceptions if input is
+     * invalid.
+     * 
+     * @param {array} events events to validate and parse.
+     * @returns {EventList} representation of the input events as an EventList.
+     */
+    MultiMonthCalendar.prototype.parseEvents = function (events) {
+        if (!Array.isArray(events)) {
+            throw '"events" parameter must be an array.';
+        }
+        var result = new EventList();
+        for (var i = 0; i < events.length; i++) {
+            var event = events[i];
+            if (!Array.isArray(event)) {
+                throw 'Event [' + i + ']: must be an array';
+            }
+            if (event.length !== 3) {
+                throw 'Event [' + i + ']: event array must contain exactly 3 elements.';
+            }
+            var id = event[0];
+            var title = event[1];
+            var ranges = event[2];
+            if (((typeof id !== 'string') || !id.trim()) && !(/^-?[0-9]+$/.test(id))) {
+                throw 'Event [' + i + ']: id must be a non-empty string or int.';
+            }
+            if ((typeof title !== 'string') || !title.trim()) {
+                throw 'Event [' + i + ']: title must be a non-empty string.';
+            }
+            if (!Array.isArray(ranges) || (ranges.length === 0)) {
+                throw 'Event [' + i + ']: date range param must be a non-empty array.';
+            }
+            var mmcRanges = [];
+            for (var j = 0; j < ranges.length; j++) {
+                mmcRanges.push(this.parseRange(ranges[j]));
+            }
+            mmcRanges.sort(Range.compare);
+            for (var j = 0; j < mmcRanges.length - 1; j++) {
+                var range1 = mmcRanges[j];
+                var range2 = mmcRanges[j+1];
+                if (range1.isOverlapping(range2) || range1.isAdjacent(range2)) {
+                    throw 'Event [' + i + ']: date ranges overlapping or adjacent.';
+                }
+            }                        
+            result.add(new Event(id, title, mmcRanges));
+        }
+        return result;
+    };
+    
+    /**
+     * Validate and parse a date range in the form (1) "string" or (2) "[string1, string2]" (quotes
+     * excluded). Form (1) means a one-day range, and form (2) a multi-day range. "string", 
+     * "string1" & "string2" must be parsable to Javascript Dates.
+     * 
+     * @param {string|array} range the range to validate and parse.
+     * @returns {Range} a parsed range.
+     */
+    MultiMonthCalendar.prototype.parseRange = function (range) {
+        if (typeof range === 'string') {
+            this.validateDateString(range);
+            var jsDate = new Date(range);
+            var calDate = new CalDate(jsDate.getFullYear(), jsDate.getMonth() + 1,jsDate.getDate());
+            return new Range(calDate, calDate);            
+        }
+        if (Array.isArray(range)) {
+            if (range.length !== 2) {
+                throw 'An array passed as date range must have exactly two elements.';
+            }
+            this.validateDateString(range[0]);
+            this.validateDateString(range[1]);
+            var jsDateStart = new Date(range[0]);
+            var jsDateEnd = new Date(range[1]);
+            if (jsDateStart.getTime() >= jsDateEnd.getTime()) {
+                throw 'In range: [' + jsDateStart + ' - ' + jsDateEnd + '], end date is equal or '
+                    + 'before the start date.';
+            }
+            var calDateStart = new CalDate(jsDateStart.getFullYear(), jsDateStart.getMonth() + 1,
+                jsDateStart.getDate());
+            var calDateEnd = new CalDate(jsDateEnd.getFullYear(), jsDateEnd.getMonth() + 1,
+                jsDateEnd.getDate());
+            return new Range(calDateStart, calDateEnd);
+        }
+        throw 'Range is not a string or an array: [' + range + '].';
+    };
+    
+    /**
+     * Checks whether the given string can be parsed to a JS Date, throwing an exception
+     * if it can't.
+     * 
+     * @param {string} string the string to validate.
+     * @returns {void}
+     */
+    MultiMonthCalendar.prototype.validateDateString = function (string) {
+        if ((new Date(string) === "Invalid Date") || isNaN(new Date(string))) {
+            throw 'This is not a valid date specification: [' + string + '].';  
+        }        
     };
 
     /**
@@ -448,7 +543,7 @@
      * A continuous range of days.
      *
      * @param {CalDate} start the beginning date of the Range (inclusive).
-     * @param {type} end the end date of the Range (inclusive).
+     * @param {CalDate} end the end date of the Range (inclusive).
      * @returns {Range}
      */
     var Range = function (start, end) {
@@ -481,6 +576,28 @@
     Range.prototype.isOverlapping = function (range) {
         return ((range.start <= this.end) && (range.end >= this.start));
     };
+    
+    /**
+     * Returns whether this Range and the argument Range are next to each other (without at least
+     * one day not falling in either of the two between them).
+     *
+     * @param {Range} range the Range to check adjacency.
+     * @returns {Boolean} whether this Range and the argument Range are adjacent.
+     */
+    Range.prototype.isAdjacent = function (range) {
+        var end1PlusOneDay = new Date(this.end.getTime());
+        end1PlusOneDay.setDate(end1PlusOneDay.getDate() + 1);
+        if (end1PlusOneDay.getTime() === range.start.getTime()) {
+            return true;
+        }
+        
+        var end2PlusOneDay = new Date(range.end.getTime());
+        end2PlusOneDay.setDate(end2PlusOneDay.getDate() + 1);
+        if (end2PlusOneDay.getTime() === this.start.getTime()) {
+            return true;
+        }
+        return false;
+    };    
 
     /**
      * Helper for creating Ranges from JS Dates.
@@ -493,6 +610,29 @@
         var calDateStart = new CalDate(start.getFullYear(), start.getMonth() + 1, start.getDate());
         var calDateEnd = new CalDate(end.getFullYear(), end.getMonth() + 1, end.getDate());
         return new Range(calDateStart, calDateEnd);
+    };
+    
+    /**
+     * Comparator of Range, based on: first, start dates, and then, end dates.
+     *
+     * @param {Range} r1 the first range to compare.
+     * @param {Range} r2 the second range to compare.
+     * @returns {Number} -1, 0, 1 according to standard comparator contract.
+     */
+    Range.compare = function (r1, r2) {
+        if (r1.start < r2.start) {
+            return -1;
+        }  
+        if (r1.start > r2.start) {
+            return 1;
+        }
+        if (r1.end < r2.end) {
+            return -1;
+        }
+        if (r1.end > r2.end) {
+            return 1;
+        }
+        return 0;
     };
 
 

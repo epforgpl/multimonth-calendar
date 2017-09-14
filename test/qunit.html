@@ -13,20 +13,19 @@
         <script src="../src/multimonth-calendar.js"></script>
         <script src="https://code.jquery.com/qunit/qunit-2.4.0.js"></script>
         <script>
-            var C = MultiMonthCalendar;
-            var range00 = C.range(C.date(2016, 3, 25), C.date(2016, 3, 31));
-            var range01 = C.range(C.date(2016, 4, 2), C.date(2016, 4, 6));
-            var range02 = C.range(C.date(2016, 4, 20), C.date(2016, 5, 6));
-            var range10 = C.range(C.date(2016, 3, 30), C.date(2016, 4, 4));
-            var range11 = C.range(C.date(2016, 4, 12), C.date(2016, 4, 15));
-            var range12 = C.range(C.date(2016, 4, 20), C.date(2016, 4, 23));
-            var range20 = C.range(C.date(2016, 4, 4), C.date(2016, 4, 4));
-            var range30 = C.range(C.date(2016, 4, 8), C.date(2016, 4, 15));
-            var range40 = C.range(C.date(2016, 4, 14), C.date(2016, 4, 14));
-            var range41 = C.range(C.date(2016, 4, 16), C.date(2016, 4, 16));
-            var range42 = C.range(C.date(2016, 4, 18), C.date(2016, 4, 18));
-            var range50 = C.range(C.date(2016, 4, 20), C.date(2016, 4, 24));
-            var range51 = C.range(C.date(2016, 4, 29), C.date(2016, 5, 15));        
+            var range00 = ['2016-03-25', '2016-03-31'];
+            var range01 = ['2016-04-02', '2016-04-06'];
+            var range02 = ['2016-04-20', '2016-05-06'];
+            var range10 = ['2016-03-30', '2016-04-04'];
+            var range11 = ['2016-04-12', '2016-04-15'];
+            var range12 = ['2016-04-20', '2016-04-23'];
+            var range20 =  '2016-04-04';
+            var range30 = ['2016-04-08', '2016-04-15'];
+            var range40 =  '2016-04-14';
+            var range41 =  '2016-04-16';
+            var range42 =  '2016-04-18';
+            var range50 = ['2016-04-20', '2016-04-24'];
+            var range51 = ['2016-04-29', '2016-05-15'];        
 
             window.calendar = new MultiMonthCalendar("qunit-fixture", 10, 2016,
                 [
@@ -37,7 +36,7 @@
                     [4, "Posiedzenie 17", [range40, range41, range42]],
                     [5, "Posiedzenie 18", [range50, range51]]
                 ],
-                function (a) { alert(a); }, 0);
+                function (a) { alert(a); }, 0);                
         </script>
         <script src="tests.js"></script>
     </body>
