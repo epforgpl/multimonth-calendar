@@ -1,5 +1,6 @@
 .multimonth-calendar {
     text-align: center;
+    min-width: 410px;
 }
 
 .multimonth-calendar:before,
@@ -22,7 +23,7 @@
     display: flex;
     justify-content:center;
     align-content:center;
-    margin-top: 100px;
+    margin-top: 150px;
 }
 
 .mmc-nav > span {
@@ -92,6 +93,7 @@
     padding: 0;
     text-align: center;
     -webkit-transition: all .2s ease;
+    background-color: #FFF;
 }
 
 .mmc-calendar-day {
@@ -112,6 +114,7 @@
 
 .mmc-calendar-day.other-month {
     border: 0;
+    background-color: inherit;
 }
 
 .mmc-calendar-day :first-child {

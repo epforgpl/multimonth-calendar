@@ -16,13 +16,13 @@
      * @param {array} events an array of events, each being an array containing: title (string),
      *     start (Date), end (Date).
      * @param {function} eventClickCallback a function executed when user clicks on the display of
-     *     an event.
+     *     an event. The data passed to it is the fourth parameter in the array representing an event.
      * @param {Number} weekStartsOn the number of day from which each displayed week should start.
      *     Can be 0-6, where 0 means Sunday and 6 means Saturday.
      * @returns {MultiMonthCalendar} an instance of the calendar.
      */
     var MultiMonthCalendar = function (containerId, month, year, events, eventClickCallback,
-            weekStartsOn) {
+                                       weekStartsOn) {
         this.containerId = containerId;
         this.start = new MonthYear(month, year);
         this.count = 1;
@@ -46,12 +46,18 @@
         this.callback = eventClickCallback;
         this.weekStartsOn = weekStartsOn;
         // Breakpoints around which number of months shown can change. Must be increasing.
-        this.breakpoints = [600, 800, 1000, 1200];
+        // Calculated like this:
+        // - each of the two navs has about 5px for the left/right symbol plus 16px horizontal padding,
+        // - each month's calendar seems to have 273px plus 30px horizontal margin.
+        // So:
+        // - two months start to fit at: 2 x (5 + 16 + 16) + 2 x (273 + 30 + 30) = 740,
+        // - three months start to fit at: 2 x (5 + 16 + 16) + 3 x (273 + 30 + 30) = 1073.
+        this.breakpoints = [750, 1080];
         // Number of these should be number of breakpoints + 1. The first number
         // is used when window width is below 1st breakpoint; the second number
         // is used when window width is b/n 1st and 2nd breakpoint, etc. Must be increasing.
-        this.numMonthsAroundBreakpoints = [1, 2, 2, 3, 3];
-        this.lastWindowWidth = 0; // Initial resizeCallback call below will set it.
+        this.numMonthsAroundBreakpoints = [1, 2, 3];
+        this.lastContainerWidth = 0; // Initial resizeCallback call below will set it.
 
         // "_this" trick is needed b/c when resize callback is called, "this"
         // refers to the window object.
@@ -63,11 +69,11 @@
         this.renderCalendar();
         this.resizeCallback(this);
     };
-    
+
     /**
      * Validate and parse the events passed to this calendar. Throws exceptions if input is
      * invalid.
-     * 
+     *
      * @param {array} events events to validate and parse.
      * @returns {EventList} representation of the input events as an EventList.
      */
@@ -81,12 +87,13 @@
             if (!Array.isArray(event)) {
                 throw 'Event [' + i + ']: must be an array';
             }
-            if (event.length !== 3) {
-                throw 'Event [' + i + ']: event array must contain exactly 3 elements.';
+            if (event.length !== 4) {
+                throw 'Event [' + i + ']: event array must contain exactly 4 elements.';
             }
             var id = event[0];
             var title = event[1];
             var ranges = event[2];
+            var dataForCallback = event[3];
             if (((typeof id !== 'string') || !id.trim()) && !(/^-?[0-9]+$/.test(id))) {
                 throw 'Event [' + i + ']: id must be a non-empty string or int.';
             }
@@ -107,17 +114,17 @@
                 if (range1.isOverlapping(range2) || range1.isAdjacent(range2)) {
                     throw 'Event [' + i + ']: date ranges overlapping or adjacent.';
                 }
-            }                        
-            result.add(new Event(id, title, mmcRanges));
+            }
+            result.add(new Event(id, title, mmcRanges, dataForCallback));
         }
         return result;
     };
-    
+
     /**
      * Validate and parse a date range in the form (1) "string" or (2) "[string1, string2]" (quotes
-     * excluded). Form (1) means a one-day range, and form (2) a multi-day range. "string", 
+     * excluded). Form (1) means a one-day range, and form (2) a multi-day range. "string",
      * "string1" & "string2" must be parsable to Javascript Dates.
-     * 
+     *
      * @param {string|array} range the range to validate and parse.
      * @returns {Range} a parsed range.
      */
@@ -126,7 +133,7 @@
             this.validateDateString(range);
             var jsDate = new Date(range);
             var calDate = new CalDate(jsDate.getFullYear(), jsDate.getMonth() + 1,jsDate.getDate());
-            return new Range(calDate, calDate);            
+            return new Range(calDate, calDate);
         }
         if (Array.isArray(range)) {
             if (range.length !== 2) {
@@ -138,7 +145,7 @@
             var jsDateEnd = new Date(range[1]);
             if (jsDateStart.getTime() >= jsDateEnd.getTime()) {
                 throw 'In range: [' + jsDateStart + ' - ' + jsDateEnd + '], end date is equal or '
-                    + 'before the start date.';
+                + 'before the start date.';
             }
             var calDateStart = new CalDate(jsDateStart.getFullYear(), jsDateStart.getMonth() + 1,
                 jsDateStart.getDate());
@@ -148,18 +155,18 @@
         }
         throw 'Range is not a string or an array: [' + range + '].';
     };
-    
+
     /**
      * Checks whether the given string can be parsed to a JS Date, throwing an exception
      * if it can't.
-     * 
+     *
      * @param {string} string the string to validate.
      * @returns {void}
      */
     MultiMonthCalendar.prototype.validateDateString = function (string) {
         if ((new Date(string) === "Invalid Date") || isNaN(new Date(string))) {
-            throw 'This is not a valid date specification: [' + string + '].';  
-        }        
+            throw 'This is not a valid date specification: [' + string + '].';
+        }
     };
 
     /**
@@ -170,19 +177,19 @@
      * @returns {void}
      */
     MultiMonthCalendar.prototype.resizeCallback = function(_this) {
-        var windowWidth = _this.getWindowWidth();
-        // Whether the resize results in a screen that's wider or more narrow.
-        var isEnlarged = (_this.lastWindowWidth <= windowWidth);
-        // When making the window larger, make sure breakpoints are checked in increasing order.
-        // When making the windows smaller - decreasing order.
+        var containerWidth = document.getElementById(_this.containerId).clientWidth;
+        // Whether the resize results in a container that's wider or more narrow.
+        var isEnlarged = (_this.lastContainerWidth <= containerWidth);
+        // When making the container larger, make sure breakpoints are checked in increasing order.
+        // When making the container smaller - decreasing order.
         var i = (isEnlarged ? 0 : (_this.breakpoints.length - 1));
         while ((0 <= i) && (i < _this.breakpoints.length)) {
             var breakpoint = _this.breakpoints[i];
             var newCount = null;
-            if ((_this.lastWindowWidth < breakpoint) && (windowWidth >= breakpoint)) {
+            if ((_this.lastContainerWidth < breakpoint) && (containerWidth >= breakpoint)) {
                 newCount = _this.numMonthsAroundBreakpoints[i + 1];
             }
-            if ((_this.lastWindowWidth >= breakpoint) && (windowWidth < breakpoint)) {
+            if ((_this.lastContainerWidth >= breakpoint) && (containerWidth < breakpoint)) {
                 newCount = _this.numMonthsAroundBreakpoints[i];
             }
             if (newCount !== null) {
@@ -198,7 +205,7 @@
             }
             isEnlarged ? i++ : i--;
         }
-        _this.lastWindowWidth = windowWidth;
+        _this.lastContainerWidth = containerWidth;
     };
 
     /**
@@ -386,7 +393,7 @@
                         td.classList.add('many-events');
                     }
                     if (hasOneEvent) {
-                        td.onclick = this.createOnclickHandler(eventsOnDay.get(0).event.id);
+                        td.onclick = this.createOnclickHandler(eventsOnDay.get(0).event.dataForCallback);
                     }
                     var dayNumDiv = document.createElement('div');
                     dayNumDiv.innerHTML = day;
@@ -430,7 +437,7 @@
                 eventIndicator.style.backgroundColor = eventViewModel.color;
                 // If > 1 event on day, add click handlers to each indicator, not to entire <td>
                 if (eventsOnDay.length() > 1) {
-                    eventIndicator.onclick = this.createOnclickHandler(eventViewModel.event.id);
+                    eventIndicator.onclick = this.createOnclickHandler(eventViewModel.event.dataForCallback);
                 }
             }
         }
@@ -439,16 +446,16 @@
 
     /**
      * Creates a closure handler to be invoked when the user clicks on an event. Separate function
-     * like this is needed to create scope for the id param, not to be overwritten by loop
+     * like this is needed to create scope for the dataForCallback param, not to be overwritten by loop
      * execution. See https://stackoverflow.com/questions/750486
      *
-     * @param {string} id the id of the event, to be passed to the callback function.
+     * @param {mixed} dataForCallback the data that will be passed to the callback on click.
      * @return {function} a closure invoking the callback passed to the calendar constructor.
      */
-    MultiMonthCalendar.prototype.createOnclickHandler = function (id) {
+    MultiMonthCalendar.prototype.createOnclickHandler = function (dataForCallback) {
         var _this = this;
         return function() {
-            _this.callback(id);
+            _this.callback(dataForCallback);
         };
     };
 
@@ -473,19 +480,6 @@
     MultiMonthCalendar.prototype.getCalendarEndDate = function () {
         var lastMonth = this.start.shift(this.count);
         return new CalDate(lastMonth.year, lastMonth.month + 1, lastMonth.getNumDays());
-    };
-
-    /**
-     * Gets the current window width. Used for responsiveness. Code adapted from jQuery.
-     *
-     * @returns {Number} the current window width.
-     */
-    MultiMonthCalendar.prototype.getWindowWidth = function () {
-        var doc = window.document;
-        var docwindowProp = doc.documentElement["clientWidth"];
-        return ((doc.compatMode === "CSS1Compat") && docwindowProp)
-            || (doc.body && doc.body["clientWidth"])
-            || docwindowProp;
     };
 
     /**
@@ -576,7 +570,7 @@
     Range.prototype.isOverlapping = function (range) {
         return ((range.start <= this.end) && (range.end >= this.start));
     };
-    
+
     /**
      * Returns whether this Range and the argument Range are next to each other (without at least
      * one day not falling in either of the two between them).
@@ -590,14 +584,14 @@
         if (end1PlusOneDay.getTime() === range.start.getTime()) {
             return true;
         }
-        
+
         var end2PlusOneDay = new Date(range.end.getTime());
         end2PlusOneDay.setDate(end2PlusOneDay.getDate() + 1);
         if (end2PlusOneDay.getTime() === this.start.getTime()) {
             return true;
         }
         return false;
-    };    
+    };
 
     /**
      * Helper for creating Ranges from JS Dates.
@@ -611,7 +605,7 @@
         var calDateEnd = new CalDate(end.getFullYear(), end.getMonth() + 1, end.getDate());
         return new Range(calDateStart, calDateEnd);
     };
-    
+
     /**
      * Comparator of Range, based on: first, start dates, and then, end dates.
      *
@@ -622,7 +616,7 @@
     Range.compare = function (r1, r2) {
         if (r1.start < r2.start) {
             return -1;
-        }  
+        }
         if (r1.start > r2.start) {
             return 1;
         }
@@ -772,7 +766,7 @@
                 }
             }
             if (rangesOverlapping.length > 0) {
-                var newEvent = new Event(event.id, event.title, rangesOverlapping);
+                var newEvent = new Event(event.id, event.title, rangesOverlapping, event.dataForCallback);
                 result.add(newEvent, this.list[i].index, this.list[i].color);
             }
         }
@@ -891,9 +885,12 @@
      * @param {string} id the id of the title.
      * @param {string} title the event title.
      * @param {array} ranges the time ranges that this event runs over.
+     * @param {mixed} dataForCallback any kind of data that the callback invoked when clicking on the event may need.
      * @returns {Event} a container for the above.
      */
-    var Event = function (id, title, ranges) {
+    var Event = function (id, title, ranges, dataForCallback) {
+        // TODO: Can we remove id as a param (and perhaps only use one internally) now that there's a separate
+        // dataForCallback param?
         this.id = id;
         this.title = title;
         this.parts = [];
@@ -902,6 +899,7 @@
             this.parts.push(new EventPart(id, range));
         }
         this.parts.sort(EventPart.compare);
+        this.dataForCallback = dataForCallback;
     };
 
     /**
@@ -1021,8 +1019,8 @@
         return new EventList();
     };
 
-    MultiMonthCalendar.event = function (id, title, ranges) {
-        return new Event(id, title, ranges);
+    MultiMonthCalendar.event = function (id, title, ranges, dataForCallback) {
+        return new Event(id, title, ranges, dataForCallback);
     };
 
     MultiMonthCalendar.range = function (start, end) {

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Multimonth Calendar Example 1</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="../src/multimonth-calendar.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    </head>
+    <body>
+        <div id="calendar" class="multimonth-calendar"></div>
+        <script src="../src/multimonth-calendar.js"></script>
+        <script>
+            var range00 = ['2016-03-25', '2016-03-31'];
+            var range01 = ['2016-04-02', '2016-04-06'];
+            var range02 = ['2016-04-20', '2016-05-06'];
+            var range10 = ['2016-03-30', '2016-04-04'];
+            var range11 = ['2016-04-12', '2016-04-15'];
+            var range12 = ['2016-04-20', '2016-04-23'];
+            var range20 =  '2016-04-04';
+            var range30 = ['2016-04-08', '2016-04-15'];
+            var range40 =  '2016-04-14';
+            var range41 =  '2016-04-16';
+            var range42 =  '2016-04-18';
+            var range50 = ['2016-04-20', '2016-04-24'];
+            var range51 = ['2016-04-29', '2016-05-15'];        
+
+            window.calendar = new MultiMonthCalendar("calendar", 4, 2016,
+                [
+                    [0, "Event 13", [range00, range01, range02], "Text to display when event 13 is clicked."],
+                    [1, "Event 14", [range10, range11, range12], "Text to display when event 14 is clicked."],
+                    [2, "Event 15", [range20], "Text to display when event 15 is clicked."],
+                    [3, "Event 16", [range30], "Text to display when event 16 is clicked."],
+                    [4, "Event 17", [range40, range41, range42], "Text to display when event 17 is clicked."],
+                    [5, "Event 18", [range50, range51], "Text to display when event 18 is clicked."]
+                ],
+                function (a) { alert(a); }, 0);                
+        </script>
+    </body>
+</html>
