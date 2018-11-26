@@ -1,0 +1,137 @@
+.multimonth-calendar {
+    text-align: center;
+}
+
+.multimonth-calendar:before,
+.multimonth-calendar:after {
+    content: " ";
+    display: table;
+}
+
+.multimonth-calendar:after {
+    clear: both;
+}
+
+.multimonth-calendar > div {
+    display: inline-block;
+}
+
+.mmc-nav {
+    color: black;
+    float: left;
+    display: flex;
+    justify-content:center;
+    align-content:center;
+    margin-top: 100px;
+}
+
+.mmc-nav > span {
+    text-decoration: none;
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 50%;
+    background-color: #f1f1f1;
+}
+
+.mmc-nav > span:hover {
+    background-color: #ddd;
+    color: black;
+    cursor: pointer;
+}
+
+.mmc-month {
+    float: left;
+    margin: 0 30px;
+}
+
+.mmc-month > .month-name {
+    text-align: center;
+    font-weight: 500;
+}
+
+.mmc-month > table {
+    border: none;
+    border-collapse: collapse;
+    padding: 5px;
+}
+
+.mmc-month > table > tbody > tr > td {
+    border: 1px solid #CCC;
+}
+
+.mmc-month > table > tbody > tr > td:first-child {
+    border-left: none;
+}
+
+.mmc-month > table > tbody > tr > td:last-child {
+    border-right: none;
+}
+
+.mmc-month > table > tbody > tr:first-child > td {
+    border-top: none;
+}
+
+.mmc-month > table > tbody > tr:last-child > td {
+    border-bottom: none;
+}
+
+.mmc-month > table > tbody > tr > td:not(.other-month) {
+    border: 1px solid #CCC;
+}
+
+.mmc-month th {
+    padding: 10px 5px;
+    border: none;
+    text-align: center;
+    font-weight: normal;
+    color: #999;
+    font-size: 0.8em;
+}
+
+.mmc-calendar-day {
+    padding: 0;
+    text-align: center;
+    -webkit-transition: all .2s ease;
+}
+
+.mmc-calendar-day {
+
+}
+
+.mmc-calendar-day.weekend {
+    background: #eee;
+}
+
+.mmc-calendar-day.has-event *:first-child {
+    color: inherit;
+}
+
+.mmc-calendar-day.one-event {
+    cursor: pointer;
+}
+
+.mmc-calendar-day.other-month {
+    border: 0;
+}
+
+.mmc-calendar-day :first-child {
+    padding: 3px;
+    min-width: 38px;
+    color: #BBB;
+}
+
+.mmc-calendar-day > .calendar-day-indicator {
+    height: 10px;
+    margin: 5px -1px;
+    position: relative;
+}
+
+.mmc-calendar-day > .calendar-day-spacer {
+    /* Adjust this to have spacing between event indicators. */
+    height: 0;
+}
+
+.mmc-calendar-day:hover > .calendar-day-indicator.event {
+    opacity: 0.3;
+    cursor: pointer;
+}
