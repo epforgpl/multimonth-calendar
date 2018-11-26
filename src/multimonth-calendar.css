@@ -1,7 +1,14 @@
 .multimonth-calendar {
     text-align: center;
     min-width: 410px;
-    font-family: 'Lato', sans-serif;
+    font-family: 'Open Sans', sans-serif;
+    box-sizing: border-box;
+}
+
+.multimonth-calendar *, 
+.multimonth-calendar *:before, 
+.multimonth-calendar *:after {
+    box-sizing: inherit;
 }
 
 .multimonth-calendar:before,
