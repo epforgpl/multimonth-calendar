@@ -1,6 +1,7 @@
 .multimonth-calendar {
     text-align: center;
     min-width: 410px;
+    font-family: 'Lato', sans-serif;
 }
 
 .multimonth-calendar:before,
