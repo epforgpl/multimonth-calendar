@@ -107,7 +107,7 @@
                 throw 'The "config.year" param must be an int in the range 1900-2100.';
             }
         } else {
-            config.year = new Date().getYear();
+            config.year = new Date().getFullYear();
         }
         if (config.hasOwnProperty('events')) {
             if (!Array.isArray(config.events)) {
