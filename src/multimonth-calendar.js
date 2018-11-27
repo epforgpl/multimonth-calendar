@@ -11,19 +11,25 @@
      * - run a callback when user clicks on a given event
      *
      * @param {Object} config the configuration object. Properties are listed below.
-     * @param {string} config.containerId the id of the HTML element to insert the calendar into.
-     * @param {Number} config.month the month to display right off, in range 0-11.
-     * @param {Number} config.year the year to display right off.
-     * @param {array} config.events an array of events, each being an array containing: 
-     *     title (string), start (Date), end (Date).
-     * @param {function} config.eventClickCallback a function executed when user clicks on 
-     *     the display of an event. The data passed to it is the fourth parameter in the array 
-     *     representing an event.
-     * @param {Number} config.weekStartsOn the number of day from which each displayed week
-     *     should start. Can be 0-6, where 0 means Sunday and 6 means Saturday.
+     * @param {string} config.containerId (required) the id of the HTML element to insert 
+     *     the calendar into.
+     * @param {Number} config.month (optional) the month to display right off, in range 0-11. If
+     *     not provided, displays current month.
+     * @param {Number} config.year (optional) the year to display right off. If not provided,
+     *     displays current year.
+     * @param {array} config.events (optional) an array of events, each being an array containing: 
+     *     title (string), start (Date), end (Date). If not provided, an empty array is used.
+     * @param {function} config.eventClickCallback (optional) a function executed when user 
+     *     clicks on the display of an event. The data passed to it is the fourth parameter 
+     *     in the array representing an event. If not provided, a no-op is exectuted.
+     * @param {Number} config.weekStartsOn (optional) the number of day on which 
+     *     each displayed week should start. Can be 0-6, where 0 means Sunday and 6 means Saturday.
+     *     If not provided, defaults to Sunday.
      * @returns {MultiMonthCalendar} an instance of the calendar.
      */
     var MultiMonthCalendar = function (config) {
+        this.validateAndFillInConfig(config);
+        
         this.containerId = config.containerId;
         this.start = new MonthYear(config.month, config.year);
         this.count = 1;
@@ -72,6 +78,63 @@
     };
 
     /**
+     * Checks that the config object contains the required properties and throws exceptions
+     * if it doesn't. For any optional properties which are not present, fills them in with
+     * defaults.
+     *
+     * @param {Object} config the main configuration object.
+     * @returns {void}
+     */
+    MultiMonthCalendar.prototype.validateAndFillInConfig = function (config) {
+        if ((config === null) || (typeof config !== 'object')) {
+            throw 'The "config" param must be a non-null object.';
+        }
+        if (!config.hasOwnProperty('containerId') || (typeof config.containerId !== 'string')
+                || (config.containerId.length === 0)) {
+            throw 'The "config.containerId" param must be present and a non-empty string.';
+        }
+        if (config.hasOwnProperty('month')) {
+            if ((typeof config.month !== 'number') || ((config.month % 1) !== 0) 
+                    || (config.month < 0) || (config.month > 11)) {
+                throw 'The "config.month" param must be an int in the range 0-11.';
+            }
+        } else {
+            config.month = new Date().getMonth();
+        }
+        if (config.hasOwnProperty('year')) {
+            if ((typeof config.year !== 'number') || ((config.year % 1) !== 0) 
+                    || (config.year < 1900) || (config.year > 2100)) {
+                throw 'The "config.year" param must be an int in the range 1900-2100.';
+            }
+        } else {
+            config.year = new Date().getYear();
+        }
+        if (config.hasOwnProperty('events')) {
+            if (!Array.isArray(config.events)) {
+                throw 'The "config.events" param must be an array.';
+            }
+        } else {
+            config.events = [];
+        }
+        if (config.hasOwnProperty('eventClickCallback')) {
+            if ((typeof config.eventClickCallback !== 'function') 
+                    || (config.eventClickCallback.length !== 1)) {
+                throw 'The "config.eventClickCallback" param must be a one-argument function.';
+            }
+        } else {
+            config.eventClickCallback = function (_) {};
+        }
+        if (config.hasOwnProperty('weekStartsOn')) {
+            if ((typeof config.weekStartsOn !== 'number') || ((config.weekStartsOn % 1) !== 0) 
+                    || (config.weekStartsOn < 0) || (config.weekStartsOn > 6)) {
+                throw 'The "config.weekStartsOn" param must be an int in the range 0-6.';
+            }
+        } else {
+            config.weekStartsOn = 0;
+        }
+    };
+
+    /**
      * Validate and parse the events passed to this calendar. Throws exceptions if input is
      * invalid.
      *
@@ -79,9 +142,6 @@
      * @returns {EventList} representation of the input events as an EventList.
      */
     MultiMonthCalendar.prototype.parseEvents = function (events) {
-        if (!Array.isArray(events)) {
-            throw '"events" parameter must be an array.';
-        }
         var result = new EventList();
         for (var i = 0; i < events.length; i++) {
             var event = events[i];
