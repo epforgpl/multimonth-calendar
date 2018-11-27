@@ -10,21 +10,22 @@
      * - move forward / back to previous / following months
      * - run a callback when user clicks on a given event
      *
-     * @param {string} containerId the HTML
-     * @param {Number} month the month to display right off, in range 0-11.
-     * @param {Number} year the year to display right off.
-     * @param {array} events an array of events, each being an array containing: title (string),
-     *     start (Date), end (Date).
-     * @param {function} eventClickCallback a function executed when user clicks on the display of
-     *     an event. The data passed to it is the fourth parameter in the array representing an event.
-     * @param {Number} weekStartsOn the number of day from which each displayed week should start.
-     *     Can be 0-6, where 0 means Sunday and 6 means Saturday.
+     * @param {Object} config the configuration object. Properties are listed below.
+     * @param {string} config.containerId the id of the HTML element to insert the calendar into.
+     * @param {Number} config.month the month to display right off, in range 0-11.
+     * @param {Number} config.year the year to display right off.
+     * @param {array} config.events an array of events, each being an array containing: 
+     *     title (string), start (Date), end (Date).
+     * @param {function} config.eventClickCallback a function executed when user clicks on 
+     *     the display of an event. The data passed to it is the fourth parameter in the array 
+     *     representing an event.
+     * @param {Number} config.weekStartsOn the number of day from which each displayed week
+     *     should start. Can be 0-6, where 0 means Sunday and 6 means Saturday.
      * @returns {MultiMonthCalendar} an instance of the calendar.
      */
-    var MultiMonthCalendar = function (containerId, month, year, events, eventClickCallback,
-                                       weekStartsOn) {
-        this.containerId = containerId;
-        this.start = new MonthYear(month, year);
+    var MultiMonthCalendar = function (config) {
+        this.containerId = config.containerId;
+        this.start = new MonthYear(config.month, config.year);
         this.count = 1;
         this.daysShort = ["N", "P", "W", "Ś", "C", "P", "S"];
         this.monthNames = [
@@ -41,10 +42,10 @@
             "Listopad",
             "Grudzień"
         ];
-        this.eventList = this.parseEvents(events);
+        this.eventList = this.parseEvents(config.events);
         this.eventList.sort();
-        this.callback = eventClickCallback;
-        this.weekStartsOn = weekStartsOn;
+        this.callback = config.eventClickCallback;
+        this.weekStartsOn = config.weekStartsOn;
         // Breakpoints around which number of months shown can change. Must be increasing.
         // Calculated like this:
         // - each of the two navs has about 5px for the left/right symbol plus 16px horizontal padding,

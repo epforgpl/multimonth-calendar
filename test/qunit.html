@@ -25,10 +25,13 @@
             var range41 =  '2016-04-16';
             var range42 =  '2016-04-18';
             var range50 = ['2016-04-20', '2016-04-24'];
-            var range51 = ['2016-04-29', '2016-05-15'];        
-
-            window.calendar = new MultiMonthCalendar("qunit-fixture", 10, 2016,
-                [
+            var range51 = ['2016-04-29', '2016-05-15'];
+            
+            var config = {
+                'containerId': 'qunit-fixture',
+                'month': 10,
+                'year': 2016,
+                'events': [
                     [0, "Posiedzenie 13", [range00, range01, range02], null],
                     [1, "Posiedzenie 14", [range10, range11, range12], null],
                     [2, "Posiedzenie 15", [range20], null],
@@ -36,7 +39,11 @@
                     [4, "Posiedzenie 17", [range40, range41, range42], null],
                     [5, "Posiedzenie 18", [range50, range51], null]
                 ],
-                function (a) { alert(a); }, 0);                
+                'eventClickCallback': function (a) { alert(a); },
+                'weekStartsOn': 0
+            };
+
+            window.calendar = new MultiMonthCalendar(config);              
         </script>
         <script src="tests.js"></script>
     </body>
