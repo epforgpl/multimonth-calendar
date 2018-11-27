@@ -54,7 +54,8 @@
         this.weekStartsOn = config.weekStartsOn;
         // Breakpoints around which number of months shown can change. Must be increasing.
         // Calculated like this:
-        // - each of the two navs has about 5px for the left/right symbol plus 16px horizontal padding,
+        // - each of the two navs has about 5px for the left/right symbol plus 16px horizontal 
+        //   padding,
         // - each month's calendar seems to have 273px plus 30px horizontal margin.
         // So:
         // - two months start to fit at: 2 x (5 + 16 + 16) + 2 x (273 + 30 + 30) = 740,
@@ -454,7 +455,8 @@
                         td.classList.add('many-events');
                     }
                     if (hasOneEvent) {
-                        td.onclick = this.createOnclickHandler(eventsOnDay.get(0).event.dataForCallback);
+                        td.onclick = 
+                                this.createOnclickHandler(eventsOnDay.get(0).event.dataForCallback);
                     }
                     var dayNumDiv = document.createElement('div');
                     dayNumDiv.innerHTML = day;
@@ -498,7 +500,8 @@
                 eventIndicator.style.backgroundColor = eventViewModel.color;
                 // If > 1 event on day, add click handlers to each indicator, not to entire <td>
                 if (eventsOnDay.length() > 1) {
-                    eventIndicator.onclick = this.createOnclickHandler(eventViewModel.event.dataForCallback);
+                    eventIndicator.onclick = 
+                            this.createOnclickHandler(eventViewModel.event.dataForCallback);
                 }
             }
         }
@@ -507,8 +510,8 @@
 
     /**
      * Creates a closure handler to be invoked when the user clicks on an event. Separate function
-     * like this is needed to create scope for the dataForCallback param, not to be overwritten by loop
-     * execution. See https://stackoverflow.com/questions/750486
+     * like this is needed to create scope for the dataForCallback param, not to be overwritten by
+     * loop execution. See https://stackoverflow.com/questions/750486
      *
      * @param {mixed} dataForCallback the data that will be passed to the callback on click.
      * @return {function} a closure invoking the callback passed to the calendar constructor.
@@ -827,7 +830,8 @@
                 }
             }
             if (rangesOverlapping.length > 0) {
-                var newEvent = new Event(event.id, event.title, rangesOverlapping, event.dataForCallback);
+                var newEvent = 
+                        new Event(event.id, event.title, rangesOverlapping, event.dataForCallback);
                 result.add(newEvent, this.list[i].index, this.list[i].color);
             }
         }
@@ -946,12 +950,13 @@
      * @param {string} id the id of the title.
      * @param {string} title the event title.
      * @param {array} ranges the time ranges that this event runs over.
-     * @param {mixed} dataForCallback any kind of data that the callback invoked when clicking on the event may need.
+     * @param {mixed} dataForCallback any kind of data that the callback invoked when clicking
+     *     on the event may need.
      * @returns {Event} a container for the above.
      */
     var Event = function (id, title, ranges, dataForCallback) {
-        // TODO: Can we remove id as a param (and perhaps only use one internally) now that there's a separate
-        // dataForCallback param?
+        // TODO: Can we remove id as a param (and perhaps only use one internally) now that 
+        // there's a separate dataForCallback param?
         this.id = id;
         this.title = title;
         this.parts = [];
