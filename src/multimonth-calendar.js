@@ -32,7 +32,11 @@
      * @param {Number} config.range.forwardLimitYear (optional) year beyond which the user can't go 
      *     back. If not provided and forwardLimitMonth is provided, defaults to next year.     
      * @param {array} config.events (optional) an array of events, each being an array containing: 
-     *     title (string), start (Date), end (Date). If not provided, an empty array is used.
+     *     id (number), title (string), range (array of arrays, each with two Dates),
+     *     hasHiddenDisplay (boolean), dataForCallback (mixed). hasHiddenDisplay set to true
+     *     means that we don't render little <div>'s indicating the event. Clicking a day with a 
+     *     hidden event still invokes the event's handler. A day with a hidden event must not have
+     *     any other event. If config.events param is not provided, an empty array is used.
      * @param {function} config.eventClickCallback (optional) a function executed when user 
      *     clicks on the display of an event. The data passed to it is the fourth parameter 
      *     in the array representing an event. If not provided, a no-op is exectuted.
@@ -240,13 +244,14 @@
             if (!Array.isArray(event)) {
                 throw 'Event [' + i + ']: must be an array';
             }
-            if (event.length !== 4) {
-                throw 'Event [' + i + ']: event array must contain exactly 4 elements.';
+            if (event.length !== 5) {
+                throw 'Event [' + i + ']: event array must contain exactly 5 elements.';
             }
             var id = event[0];
             var title = event[1];
             var ranges = event[2];
-            var dataForCallback = event[3];
+            var hasHiddenDisplay = event[3];
+            var dataForCallback = event[4];
             if (((typeof id !== 'string') || !id.trim()) && !(/^-?[0-9]+$/.test(id))) {
                 throw 'Event [' + i + ']: id must be a non-empty string or int.';
             }
@@ -268,9 +273,34 @@
                     throw 'Event [' + i + ']: date ranges overlapping or adjacent.';
                 }
             }
-            result.add(new Event(id, title, mmcRanges, dataForCallback));
+            result.add(new Event(id, title, mmcRanges, hasHiddenDisplay, dataForCallback));
         }
+        this.validateHiddenEventsDontOverlap(result.getAllAsEvents());
         return result;
+    };
+    
+    /**
+     * Checks that events with hidden display don't overlap each other or any other events.
+     * If a hidden event overlapped any other event, it wouldn't be possible to interact with
+     * it in any way on an overlapping day: it doesn't have an indicator <div> to click on, and
+     * because there's also another event on that day, we can't invoke the callback by just
+     * clicking anywhere on the day.
+     * 
+     * @param {array} allEvents all the events added to the calendar.
+     * @returns {void}
+     */
+    MultiMonthCalendar.prototype.validateHiddenEventsDontOverlap = function (allEvents) {
+        for (var i = 0; i < allEvents.length; i++) {
+            if (allEvents[i].hasHiddenDisplay) {
+                var hiddenEvent = allEvents[i];
+                for (var j = 0; j < allEvents.length; j++) {
+                    var event = allEvents[j];
+                    if ((hiddenEvent !== event) && hiddenEvent.isOverlapping(event)) {
+                        throw 'Hidden events may not overlap any other events.';
+                    }
+                }
+            }
+        }
     };
 
     /**
@@ -523,11 +553,12 @@
      * @param {MonthYear} monthYear the month-year to render the table for.
      * @param {Element} tbody the tbody HTML element to attach the cells to.
      * @param {EventList} eventList the list of events to render in the entire calendar being drawn,
-     *     not only in the current block.
+     *     not only in the current month block. By "entire calendar" we mean what's going to be
+     *     displayed on the screen now (e.g. 3 months), NOT the theoretical full calendar 
+     *     between back limit and forward limit.
      * @return {Element} a calendar table with days for a single month.
      */
     MultiMonthCalendar.prototype.distributeDays = function (monthYear, tbody, eventList) {
-        var _this = this;
         var day = 1;
         var dayCount = monthYear.getNumDays();
         var maxEventIndex = eventList.getMaxIndex();
@@ -536,14 +567,18 @@
             var weekRow = document.createElement("tr");
             for (var i = this.weekStartsOn; i < this.weekStartsOn + 7; i++) {
                 if (monthYear.getWeekDay(day) === (i % 7)) {
+                    // Create <td> for the day.
                     var td = document.createElement("td");
                     td.classList.add('mmc-calendar-day');
+                    // Perhaps indicate weekend.
                     var isWeekend = (((i % 7) === 0) || ((i % 7) === 6));
                     if (isWeekend) {
                         td.classList.add('weekend');
                     }
+                    // Get events on the day.
                     var date = new CalDate(monthYear.year, monthYear.month + 1, day);
                     var eventsOnDay = eventList.getSublistOverlapping(new Range(date, date), false);
+                    // Add CSS if events present.
                     var hasOneEvent = (eventsOnDay.length() === 1);
                     if (hasOneEvent) {
                         td.classList.add('has-event');
@@ -552,17 +587,25 @@
                     var hasManyEvents = (eventsOnDay.length() > 1);
                     if (hasManyEvents) {
                         td.classList.add('has-event');
-                        td.classList.add('many-events');
                     }
+                    // If only one event, click on entire <td> triggers callback for that event.
                     if (hasOneEvent) {
-                        td.onclick = 
-                                this.createOnclickHandler(eventsOnDay.get(0).event.dataForCallback);
+                        var dataForCallback = eventsOnDay.get(0).event.dataForCallback;
+                        td.onclick = this.createOnclickHandler(dataForCallback);
                     }
+                    // Day number.
                     var dayNumDiv = document.createElement('div');
                     dayNumDiv.innerHTML = day;
                     td.appendChild(dayNumDiv);
-                    for (var j = maxEventIndex; j >= 0; j--) {
-                        td.appendChild(this.createEventIndicator(eventsOnDay, j));
+                    // Either add placeholder (giving the <td> some height), or event indicators.
+                    if (maxEventIndex === null) {
+                        var placeholder = document.createElement('div');
+                        placeholder.classList.add('calendar-day-placeholder');
+                        td.appendChild(placeholder);
+                    } else {
+                        for (var j = maxEventIndex; j >= 0; j--) {
+                            td.appendChild(this.createEventIndicator(eventsOnDay, j));
+                        }
                     }
                     weekRow.appendChild(td);
                     day++;
@@ -595,19 +638,22 @@
         for (var i = 0; i < eventsOnDay.length(); i++) {
             var eventViewModel = eventsOnDay.get(i);
             if (indicatorIndex === eventViewModel.index) { // Event found.
+                var event = eventViewModel.event;
+                if (event.hasHiddenDisplay) {
+                    eventIndicator.classList.add('hidden');
+                }
                 eventIndicator.classList.add('event');
-                eventIndicator.title = eventViewModel.event.title;
+                eventIndicator.title = event.title;
                 eventIndicator.style.backgroundColor = eventViewModel.color;
                 // If > 1 event on day, add click handlers to each indicator, not to entire <td>
                 if (eventsOnDay.length() > 1) {
-                    eventIndicator.onclick = 
-                            this.createOnclickHandler(eventViewModel.event.dataForCallback);
+                    eventIndicator.onclick = this.createOnclickHandler(event.dataForCallback);
                 }
             }
         }
         return eventIndicator;
     };
-
+    
     /**
      * Creates a closure handler to be invoked when the user clicks on an event. Separate function
      * like this is needed to create scope for the dataForCallback param, not to be overwritten by
@@ -953,8 +999,8 @@
                 }
             }
             if (rangesOverlapping.length > 0) {
-                var newEvent = 
-                        new Event(event.id, event.title, rangesOverlapping, event.dataForCallback);
+                var newEvent = new Event(event.id, event.title, rangesOverlapping, 
+                        event.hasHiddenDisplay, event.dataForCallback);
                 result.add(newEvent, this.list[i].index, this.list[i].color);
             }
         }
@@ -1029,11 +1075,15 @@
     };
 
     /**
-     * Returns the maximum event index used by this list (this is NOT the list length).
+     * Returns the maximum event index used by this list (this is NOT the list length), or null
+     * if list is empty.
      *
-     * @returns {Number} the maximum index used by this list.
+     * @returns {Number|null} the maximum index used by this list or null if list is empty.
      */
     EventList.prototype.getMaxIndex = function () {
+        if (this.list.length === 0) {
+            return null;
+        }
         var max = 0;
         for (var i = 0 ; i < this.list.length; i++) {
             if (this.list[i].index > max) {
@@ -1058,6 +1108,28 @@
         }
         return null;
     };
+    
+    /**
+     * Return the events held in the form of EventViewModel's.
+     * 
+     * @returns {array}
+     */
+    EventList.prototype.getAllAsEventViewModels = function () {
+        return this.list;
+    };
+    
+    /**
+     * Return the events held in the form of Event's.
+     * 
+     * @returns {Array}
+     */
+    EventList.prototype.getAllAsEvents = function () {
+        var allEvents = [];
+        for (var i = 0; i < this.list.length; i++) {
+            allEvents.push(this.list[i].event);
+        }
+        return allEvents;
+    };
 
 
 
@@ -1073,11 +1145,12 @@
      * @param {string} id the id of the title.
      * @param {string} title the event title.
      * @param {array} ranges the time ranges that this event runs over.
+     * @param {boolean} hasHiddenDisplay whether the event should be displayed in a hidden way.
      * @param {mixed} dataForCallback any kind of data that the callback invoked when clicking
      *     on the event may need.
      * @returns {Event} a container for the above.
      */
-    var Event = function (id, title, ranges, dataForCallback) {
+    var Event = function (id, title, ranges, hasHiddenDisplay, dataForCallback) {
         // TODO: Can we remove id as a param (and perhaps only use one internally) now that 
         // there's a separate dataForCallback param?
         this.id = id;
@@ -1088,6 +1161,7 @@
             this.parts.push(new EventPart(id, range));
         }
         this.parts.sort(EventPart.compare);
+        this.hasHiddenDisplay = hasHiddenDisplay;
         this.dataForCallback = dataForCallback;
     };
 
@@ -1208,8 +1282,8 @@
         return new EventList();
     };
 
-    MultiMonthCalendar.event = function (id, title, ranges, dataForCallback) {
-        return new Event(id, title, ranges, dataForCallback);
+    MultiMonthCalendar.event = function (id, title, ranges, hasHiddenDisplay, dataForCallback) {
+        return new Event(id, title, ranges, hasHiddenDisplay, dataForCallback);
     };
 
     MultiMonthCalendar.range = function (start, end) {

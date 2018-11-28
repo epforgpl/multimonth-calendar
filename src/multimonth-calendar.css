@@ -131,10 +131,16 @@
     color: #BBB;
 }
 
+.mmc-calendar-day > .calendar-day-placeholder, 
 .mmc-calendar-day > .calendar-day-indicator {
     height: 10px;
     margin: 5px -1px;
     position: relative;
+}
+
+.mmc-calendar-day > .calendar-day-indicator.hidden {
+    margin: 5px 0;
+    background-color: transparent !important;
 }
 
 .mmc-calendar-day > .calendar-day-spacer {
