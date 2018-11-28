@@ -27,7 +27,7 @@
             
             var config = {
                 'containerId': 'calendar',
-                'month': 10,
+                'month': 4,
                 'year': 2016,
                 'events': [
                     [0, "Event 13", [range00, range01, range02], "Text to display when event 13 is clicked."],
@@ -38,10 +38,16 @@
                     [5, "Event 18", [range50, range51], "Text to display when event 18 is clicked."]
                 ],
                 'eventClickCallback': function (a) { alert(a); },
-                'weekStartsOn': 0
+                'weekStartsOn': 0,
+                'range': {
+                    'backLimitMonth': 11,
+                    'backLimitYear': 2015,
+                    'forwardLimitMonth': 5,
+                    'forwardLimitYear': 2017
+                }
             };
-            
-            window.calendar = new MultiMonthCalendar(config);        
+
+            window.calendar = new MultiMonthCalendar(config);               
         </script>
     </body>
 </html>
