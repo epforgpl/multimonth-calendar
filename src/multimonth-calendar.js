@@ -1,6 +1,9 @@
 'use strict';
 
 (function() {
+    
+    const MIN_YEAR = 1900;
+    const MAX_YEAR = 2100;
 
     /**
      * Calendar able to:
@@ -17,6 +20,17 @@
      *     not provided, displays current month.
      * @param {Number} config.year (optional) the year to display right off. If not provided,
      *     displays current year.
+     * @param {Object} config.range (optional) limits on how far back/forward user can go on the
+     *     calendar. If not provided, there's no limit.
+     * @param {Number} config.range.backLimitMonth (optional) month beyond which the user can't go 
+     *     back, in range 0-11. If not provided and backLimitYear is provided, defaults to 0.
+     * @param {Number} config.range.backLimitYear (optional) year beyond which the user can't go 
+     *     back. If not provided and backLimitMonth is provided, defaults to last year.
+     * @param {Number} config.range.forwardLimitMonth (optional) month beyond which the user can't
+     *     go forward, in range 0-11. If not provided and forwardLimitYear is provided,
+     *     defaults to 11.
+     * @param {Number} config.range.forwardLimitYear (optional) year beyond which the user can't go 
+     *     back. If not provided and forwardLimitMonth is provided, defaults to next year.     
      * @param {array} config.events (optional) an array of events, each being an array containing: 
      *     title (string), start (Date), end (Date). If not provided, an empty array is used.
      * @param {function} config.eventClickCallback (optional) a function executed when user 
@@ -32,6 +46,9 @@
         
         this.containerId = config.containerId;
         this.start = new MonthYear(config.month, config.year);
+        this.backLimit = new MonthYear(config.range.backLimitMonth, config.range.backLimitYear);
+        this.forwardLimit = 
+                new MonthYear(config.range.forwardLimitMonth, config.range.forwardLimitYear);
         this.count = 1;
         this.daysShort = ["N", "P", "W", "Ś", "C", "P", "S"];
         this.monthNames = [
@@ -104,12 +121,86 @@
         }
         if (config.hasOwnProperty('year')) {
             if ((typeof config.year !== 'number') || ((config.year % 1) !== 0) 
-                    || (config.year < 1900) || (config.year > 2100)) {
+                    || (config.year < MIN_YEAR) || (config.year > MAX_YEAR)) {
                 throw 'The "config.year" param must be an int in the range 1900-2100.';
             }
         } else {
             config.year = new Date().getFullYear();
         }
+        if (!config.hasOwnProperty('range')) {
+            config.range = {};
+        }
+        if ((config.range === null) || (typeof config.range !== 'object')) {
+            throw 'The "config.range" param must be a non-null object.';
+        }
+        if (config.range.hasOwnProperty('backLimitMonth')) {
+            if ((typeof config.range.backLimitMonth !== 'number') 
+                    || ((config.range.backLimitMonth % 1) !== 0) 
+                    || (config.range.backLimitMonth < 0) 
+                    || (config.range.backLimitMonth > 11)) {
+                throw 'The "config.range.backLimitMonth" param must be an int in the range 0-11.';
+            }
+        }
+        if (config.range.hasOwnProperty('backLimitYear')) {
+            if ((typeof config.range.backLimitYear !== 'number') 
+                    || ((config.range.backLimitYear % 1) !== 0) 
+                    || (config.range.backLimitYear < MIN_YEAR) 
+                    || (config.range.backLimitYear > MAX_YEAR)) {
+                throw 'The "config.range.backLimitYear" param must be an int in ' 
+                        + 'the range 1900-2100.';
+            }
+        }
+        if (config.range.hasOwnProperty('forwardLimitMonth')) {
+            if ((typeof config.range.forwardLimitMonth !== 'number') 
+                    || ((config.range.forwardLimitMonth % 1) !== 0) 
+                    || (config.range.forwardLimitMonth < 0) 
+                    || (config.range.forwardLimitMonth > 11)) {
+                throw 'The "config.range.forwardLimitMonth" param must be int in the range 0-11.';
+            }
+        }
+        if (config.range.hasOwnProperty('forwardLimitYear')) {
+            if ((typeof config.range.forwardLimitYear !== 'number') 
+                    || ((config.range.forwardLimitYear % 1) !== 0) 
+                    || (config.range.forwardLimitYear < MIN_YEAR) 
+                    || (config.range.forwardLimitYear > MAX_YEAR)) {
+                throw 'The "config.range.forwardLimitYear" param must be an int in ' 
+                        + 'the range 1900-2100.';
+            }
+        }
+        if (!config.range.hasOwnProperty('backLimitYear') 
+                && !config.range.hasOwnProperty('backLimitMonth')) {
+            config.range.backLimitYear = MIN_YEAR;
+        }            
+        if (config.range.hasOwnProperty('backLimitYear') 
+                && !config.range.hasOwnProperty('backLimitMonth')) {
+            config.range.backLimitMonth = 0;                
+        }
+        if (config.range.hasOwnProperty('backLimitMonth') 
+                && !config.range.hasOwnProperty('backLimitYear')) {
+            config.range.backLimitYear = new Date().getFullYear() - 1;
+        }
+        if (!config.range.hasOwnProperty('forwardLimitYear') 
+                && !config.range.hasOwnProperty('forwardLimitMonth')) {
+            config.range.forwardLimitYear = MAX_YEAR;
+        }
+        if (config.range.hasOwnProperty('forwardLimitYear') 
+                && !config.range.hasOwnProperty('forwardLimitMonth')) {
+            config.range.forwardLimitMonth = 11;
+        }
+        if (config.range.hasOwnProperty('forwardLimitMonth') 
+                && !config.range.hasOwnProperty('forwardLimitYear')) {
+            config.range.forwardLimitYear = new Date().getFullYear() + 1;
+        }
+        var start = new MonthYear(config.month, config.year);
+        var backLimit = new MonthYear(config.range.backLimitMonth, config.range.backLimitYear);
+        var forwardLimit = 
+                new MonthYear(config.range.forwardLimitMonth, config.range.forwardLimitYear);
+        if (MonthYear.compare(backLimit, start) > 0) {
+            throw 'Start month-year is before the back limit.';
+        }
+        if (MonthYear.compare(start, forwardLimit) > 0) {
+            throw 'Start month-year is after the forward limit.';
+        }        
         if (config.hasOwnProperty('events')) {
             if (!Array.isArray(config.events)) {
                 throw 'The "config.events" param must be an array.';
@@ -320,7 +411,16 @@
 
         var _this = this;
         span.onclick = function() {
-            _this.start = _this.start.shift((isForward ? 1 : (-1)) * _this.count);
+            var newStart = _this.start.shift((isForward ? 1 : (-1)) * _this.count);
+            // Prevent going further back than backLimit.
+            if (MonthYear.compare(_this.backLimit, newStart) > 0) {
+                newStart = _this.backLimit;
+            }
+            // Prevent going further forward than forwardLimit.
+            if (MonthYear.compare(_this.forwardLimit, newStart) < 0) {
+                newStart = _this.forwardLimit;
+            }
+            _this.start = newStart;
             _this.rerenderCalendar();
         };
         span.innerHTML = (isForward ? '&#8250' : '&#8249') + ';';
@@ -748,6 +848,29 @@
      */
     MonthYear.prototype.getWeekDay = function (dayOfMonth) {
         return new Date(this.year, this.month, dayOfMonth).getDay();
+    };
+    
+    /**
+     * Natural comparator of MonthYear's.
+     *
+     * @param {MonthYear} my1 the first MonthYear to compare.
+     * @param {MonthYear} my2 the second MonthYear to compare.
+     * @returns {Number} -1, 0, 1 according to standard comparator contract.
+     */
+    MonthYear.compare = function (my1, my2) {
+        if (my1.year < my2.year) {
+            return -1;
+        }
+        if (my1.year > my2.year) {
+            return 1;
+        }
+        if (my1.month < my2.month) {
+            return -1;
+        }
+        if (my1.month > my2.month) {
+            return 1;
+        }
+        return 0;
     };
 
 
