@@ -24,18 +24,21 @@
             var range42 =  '2016-04-18';
             var range50 = ['2016-04-20', '2016-04-24'];
             var range51 = ['2016-04-29', '2016-05-15'];
+            var range60 = ['2016-05-24', '2016-05-26'];
             
             var config = {
                 'containerId': 'calendar',
                 'month': 4,
                 'year': 2016,
                 'events': [
-                    [0, "Event 13", [range00, range01, range02], "Text to display when event 13 is clicked."],
-                    [1, "Event 14", [range10, range11, range12], "Text to display when event 14 is clicked."],
-                    [2, "Event 15", [range20], "Text to display when event 15 is clicked."],
-                    [3, "Event 16", [range30], "Text to display when event 16 is clicked."],
-                    [4, "Event 17", [range40, range41, range42], "Text to display when event 17 is clicked."],
-                    [5, "Event 18", [range50, range51], "Text to display when event 18 is clicked."]
+                    [0, "Event 13", [range00, range01, range02], false, "Text to display when event 13 is clicked."],
+                    [1, "Event 14", [range10, range11, range12], false, "Text to display when event 14 is clicked."],
+                    [2, "Event 15", [range20], false, "Text to display when event 15 is clicked."],
+                    [3, "Event 16", [range30], false, "Text to display when event 16 is clicked."],
+                    [4, "Event 17", [range40, range41, range42], false, "Text to display when event 17 is clicked."],
+                    [5, "Event 18", [range50, range51], false, "Text to display when event 18 is clicked."],
+                    // Hidden event.
+                    [6, "Event 19", [range60], true, "Text to display when event 19 is clicked."]
                 ],
                 'eventClickCallback': function (a) { alert(a); },
                 'weekStartsOn': 0,
@@ -47,7 +50,7 @@
                 }
             };
 
-            window.calendar = new MultiMonthCalendar(config);               
+            window.calendar = new MultiMonthCalendar(config);
         </script>
     </body>
 </html>
