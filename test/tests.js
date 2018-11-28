@@ -49,19 +49,54 @@ QUnit.test("test MonthYear.getWeekDay", function (assert) {
 
 QUnit.test("test Event.isOverlapping", function (assert) {
     var C = MultiMonthCalendar;
-    var event1 = C.event(1, "Posiedzenie 14", [C.range(C.date(2016, 3, 9), C.date(2016, 3, 24))]);
-    var event2 = C.event(2, "Posiedzenie 18", [C.range(C.date(2016, 3, 24), C.date(2016, 3, 28))]);
-    var event3 = C.event(3, "Posiedzenie 18", [C.range(C.date(2016, 3, 9), C.date(2016, 3, 9))]);
-    var event4 = C.event(4, "Posiedzenie 18", [C.range(C.date(2016, 3, 7), C.date(2016, 3, 8))]);
-    var event5 = C.event(5, "Posiedzenie 18", [C.range(C.date(2016, 3, 9), C.date(2016, 3, 9))]);
-    assert.ok(event1.isOverlapping(event2));
-    assert.ok(event1.isOverlapping(event2));
-    assert.ok(event1.isOverlapping(event3));
-    assert.notOk(event1.isOverlapping(event4));
-    assert.ok(event1.isOverlapping(event2));
-    assert.ok(event3.isOverlapping(event5));
-    assert.notOk(event2.isOverlapping(event3));
-    assert.notOk(event3.isOverlapping(event4));
+    var event1 = C.event(1, "Posiedzenie 1", [C.range(C.date(2016, 3, 9), C.date(2016, 3, 24))]);
+    var event2 = C.event(2, "Posiedzenie 2", [C.range(C.date(2016, 3, 24), C.date(2016, 3, 28))]);
+    var event3 = C.event(3, "Posiedzenie 3", [C.range(C.date(2016, 3, 9), C.date(2016, 3, 9))]);
+    var event4 = C.event(4, "Posiedzenie 4", [C.range(C.date(2016, 3, 7), C.date(2016, 3, 8))]);
+    var event5 = C.event(5, "Posiedzenie 5", [C.range(C.date(2016, 3, 9), C.date(2016, 3, 9))]);
+    var event6 = C.event(6, "Posiedzenie 6", [
+        C.range(C.date(2016, 3, 3), C.date(2016, 3, 3)),
+        C.range(C.date(2016, 3, 8), C.date(2016, 3, 8)),
+        C.range(C.date(2016, 4, 1), C.date(2016, 4, 30))
+    ]);
+    var event7 = C.event(7, "Posiedzenie 7", [
+        C.range(C.date(2016, 3, 2), C.date(2016, 3, 2)),
+        C.range(C.date(2016, 5, 1), C.date(2016, 5, 10)),
+        C.range(C.date(2016, 6, 1), C.date(2016, 6, 10))
+    ]);
+    var event8 = C.event(8, "Posiedzenie 8", [
+        C.range(C.date(2016, 3, 4), C.date(2016, 3, 5)),
+        C.range(C.date(2016, 3, 9), C.date(2016, 3, 24)),
+        C.range(C.date(2016, 4, 30), C.date(2016, 4, 30))
+    ]);
+    assert.ok(   event1.isOverlapping(event2)); assert.ok(   event2.isOverlapping(event1));
+    assert.ok(   event1.isOverlapping(event3)); assert.ok(   event3.isOverlapping(event1));
+    assert.notOk(event1.isOverlapping(event4)); assert.notOk(event4.isOverlapping(event1));
+    assert.ok(   event1.isOverlapping(event5)); assert.ok(   event5.isOverlapping(event1));
+    assert.notOk(event1.isOverlapping(event6)); assert.notOk(event6.isOverlapping(event1));
+    assert.notOk(event1.isOverlapping(event7)); assert.notOk(event7.isOverlapping(event1));
+    assert.ok(   event1.isOverlapping(event8)); assert.ok(   event8.isOverlapping(event1));
+    assert.notOk(event2.isOverlapping(event3)); assert.notOk(event3.isOverlapping(event2));
+    assert.notOk(event2.isOverlapping(event4)); assert.notOk(event4.isOverlapping(event2));
+    assert.notOk(event2.isOverlapping(event5)); assert.notOk(event5.isOverlapping(event2));
+    assert.notOk(event2.isOverlapping(event6)); assert.notOk(event6.isOverlapping(event2));
+    assert.notOk(event2.isOverlapping(event7)); assert.notOk(event7.isOverlapping(event2));
+    assert.ok(   event2.isOverlapping(event8)); assert.ok(   event8.isOverlapping(event2));
+    assert.notOk(event3.isOverlapping(event4)); assert.notOk(event4.isOverlapping(event3));
+    assert.ok(   event3.isOverlapping(event5)); assert.ok(   event5.isOverlapping(event3));
+    assert.notOk(event3.isOverlapping(event6)); assert.notOk(event6.isOverlapping(event3));
+    assert.notOk(event3.isOverlapping(event7)); assert.notOk(event7.isOverlapping(event3));
+    assert.ok(   event3.isOverlapping(event8)); assert.ok(   event8.isOverlapping(event3));
+    assert.notOk(event4.isOverlapping(event5)); assert.notOk(event5.isOverlapping(event4));
+    assert.ok(   event4.isOverlapping(event6)); assert.ok(   event6.isOverlapping(event4));
+    assert.notOk(event4.isOverlapping(event7)); assert.notOk(event7.isOverlapping(event4));
+    assert.notOk(event4.isOverlapping(event8)); assert.notOk(event8.isOverlapping(event4));
+    assert.notOk(event5.isOverlapping(event6)); assert.notOk(event6.isOverlapping(event5));
+    assert.notOk(event5.isOverlapping(event7)); assert.notOk(event7.isOverlapping(event5));
+    assert.ok(   event5.isOverlapping(event8)); assert.ok(   event8.isOverlapping(event5));
+    assert.notOk(event6.isOverlapping(event7)); assert.notOk(event7.isOverlapping(event6));
+    assert.ok(   event6.isOverlapping(event8)); assert.ok(   event8.isOverlapping(event6));
+    assert.notOk(event7.isOverlapping(event8)); assert.notOk(event8.isOverlapping(event7));
 });
 
 QUnit.test("test EventList.assignIndexAndColor", function (assert) {
