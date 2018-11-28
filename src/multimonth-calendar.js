@@ -1172,14 +1172,19 @@
      * @returns {Boolean} whether the two events overlap.
      */
     Event.prototype.isOverlapping = function (event) {
-        // TODO: Optimize - can do linear time.
+        var allRanges = [];
         for (var i = 0; i < this.parts.length; i++) {
-            var partOfThis = this.parts[i];
-            for (var j = 0; j < event.parts.length; j++) {
-                var partOfThat = event.parts[j];
-                if (partOfThis.isOverlapping(partOfThat)) {
-                    return true;
-                }
+            allRanges.push(this.parts[i].range);
+        }
+        for (var i = 0; i < event.parts.length; i++) {
+            allRanges.push(event.parts[i].range);
+        }
+        allRanges.sort(Range.compare);
+        for (var i = 0; i < allRanges.length - 1; i++) {
+            var range1 = allRanges[i];
+            var range2 = allRanges[i+1];
+            if (range1.isOverlapping(range2)) {
+                return true;
             }
         }
         return false;
