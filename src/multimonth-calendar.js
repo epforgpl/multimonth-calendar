@@ -43,6 +43,9 @@
      * @param {Number} config.weekStartsOn (optional) the number of day on which 
      *     each displayed week should start. Can be 0-6, where 0 means Sunday and 6 means Saturday.
      *     If not provided, defaults to Sunday.
+     * @param {string} config.eventIndicatorStyle (optional) whether to display event indicator
+     *     <div>s as little bars or dots. Accepts either 'bars' or 'dots'. If not provided, defaults
+     *     to 'bars'.
      * @returns {MultiMonthCalendar} an instance of the calendar.
      */
     var MultiMonthCalendar = function (config) {
@@ -73,6 +76,7 @@
         this.eventList.sort();
         this.callback = config.eventClickCallback;
         this.weekStartsOn = config.weekStartsOn;
+        this.eventIndicatorStyle = config.eventIndicatorStyle;
         // Breakpoints around which number of months shown can change. Must be increasing.
         // Calculated like this:
         // - each of the two navs has about 5px for the left/right symbol plus 16px horizontal 
@@ -227,6 +231,15 @@
             }
         } else {
             config.weekStartsOn = 0;
+        }
+        if (config.hasOwnProperty('eventIndicatorStyle')) {
+            if ((typeof config.eventIndicatorStyle !== 'string')
+                    || ((config.eventIndicatorStyle !== 'bars') 
+                    && (config.eventIndicatorStyle !== 'dots'))) {
+            throw 'The "config.eventIndicatorStyle" param must be either "bars" or "dots".';
+        }
+        } else {
+            config.eventIndicatorStyle = 'bars';
         }
     };
 
@@ -601,6 +614,7 @@
                     if (maxEventIndex === null) {
                         var placeholder = document.createElement('div');
                         placeholder.classList.add('calendar-day-placeholder');
+                        placeholder.classList.add(this.eventIndicatorStyle);
                         td.appendChild(placeholder);
                     } else {
                         for (var j = maxEventIndex; j >= 0; j--) {
@@ -634,6 +648,7 @@
     MultiMonthCalendar.prototype.createEventIndicator = function (eventsOnDay, indicatorIndex) {
         var eventIndicator = document.createElement('div');
         eventIndicator.classList.add('calendar-day-indicator');
+        eventIndicator.classList.add(this.eventIndicatorStyle);
         // Find event (if any) that matches this indicator's index.
         for (var i = 0; i < eventsOnDay.length(); i++) {
             var eventViewModel = eventsOnDay.get(i);
