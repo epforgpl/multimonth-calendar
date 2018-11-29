@@ -326,8 +326,8 @@
             this.validateDateString(range[1]);
             var jsDateStart = new Date(range[0]);
             var jsDateEnd = new Date(range[1]);
-            if (jsDateStart.getTime() >= jsDateEnd.getTime()) {
-                throw 'In range: [' + jsDateStart + ' - ' + jsDateEnd + '], end date is equal or '
+            if (jsDateStart.getTime() > jsDateEnd.getTime()) {
+                throw 'In range: [' + jsDateStart + ' - ' + jsDateEnd + '], end date is '
                 + 'before the start date.';
             }
             var calDateStart = new CalDate(jsDateStart.getFullYear(), jsDateStart.getMonth() + 1,
