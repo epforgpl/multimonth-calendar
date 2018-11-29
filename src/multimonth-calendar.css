@@ -116,10 +116,6 @@
     color: inherit;
 }
 
-.mmc-calendar-day.one-event {
-    cursor: pointer;
-}
-
 .mmc-calendar-day.other-month {
     border: 0;
     background-color: inherit;
@@ -131,11 +127,20 @@
     color: #BBB;
 }
 
-.mmc-calendar-day > .calendar-day-placeholder, 
-.mmc-calendar-day > .calendar-day-indicator {
+.mmc-calendar-day > .calendar-day-placeholder.bars, 
+.mmc-calendar-day > .calendar-day-indicator.bars {
     height: 10px;
     margin: 5px -1px;
     position: relative;
+}
+
+.mmc-calendar-day > .calendar-day-placeholder.dots, 
+.mmc-calendar-day > .calendar-day-indicator.dots {
+    height: 10px;
+    width: 10px;
+    margin: 5px auto;
+    position: relative;
+    border-radius: 50%;
 }
 
 .mmc-calendar-day > .calendar-day-indicator.hidden {
@@ -148,7 +153,12 @@
     height: 0;
 }
 
-.mmc-calendar-day:hover > .calendar-day-indicator.event {
-    opacity: 0.3;
+.mmc-calendar-day.one-event,
+.mmc-calendar-day > .calendar-day-indicator.event {
     cursor: pointer;
+}
+
+.mmc-calendar-day.one-event:hover, 
+.mmc-calendar-day > .calendar-day-indicator.event:hover {
+    opacity: 0.3;
 }
