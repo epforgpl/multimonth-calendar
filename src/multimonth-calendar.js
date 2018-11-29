@@ -601,10 +601,12 @@
                     if (hasManyEvents) {
                         td.classList.add('has-event');
                     }
-                    // If only one event, click on entire <td> triggers callback for that event.
+                    // If only one event, click on entire <td> triggers callback for that event,
+                    // and hovering over it shows tooltip.
                     if (hasOneEvent) {
-                        var dataForCallback = eventsOnDay.get(0).event.dataForCallback;
-                        td.onclick = this.createOnclickHandler(dataForCallback);
+                        var event = eventsOnDay.get(0).event;
+                        td.onclick = this.createOnclickHandler(event.dataForCallback);
+                        td.title = event.title;
                     }
                     // Day number.
                     var dayNumDiv = document.createElement('div');
