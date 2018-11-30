@@ -4,6 +4,9 @@
     
     const MIN_YEAR = 1900;
     const MAX_YEAR = 2100;
+    // Taken from Sejmometr logo.
+    const DEFAULT_COLORS = ['#62bb46', '#0099da', '#fdb924', '#e23d40', '#993f98',
+        '#4a9536', '#f79433', '#b55594'];
 
     /**
      * Calendar able to:
@@ -46,6 +49,9 @@
      * @param {string} config.eventIndicatorStyle (optional) whether to display event indicator
      *     <div>s as little bars or dots. Accepts either 'bars' or 'dots'. If not provided, defaults
      *     to 'bars'.
+     * @param {array} config.eventColors (optional) a list of colors, in hex notation 
+     *     (e.g. '#ffffff') that will be used to render event indicators. If not provided, defaults
+     *     to DEFAULT_COLORS constant.
      * @returns {MultiMonthCalendar} an instance of the calendar.
      */
     var MultiMonthCalendar = function (config) {
@@ -72,6 +78,7 @@
             "Listopad",
             "Grudzień"
         ];
+        this.eventColors = config.eventColors;
         this.eventList = this.parseEvents(config.events);
         this.eventList.sort();
         this.callback = config.eventClickCallback;
@@ -236,10 +243,23 @@
             if ((typeof config.eventIndicatorStyle !== 'string')
                     || ((config.eventIndicatorStyle !== 'bars') 
                     && (config.eventIndicatorStyle !== 'dots'))) {
-            throw 'The "config.eventIndicatorStyle" param must be either "bars" or "dots".';
-        }
+                throw 'The "config.eventIndicatorStyle" param must be either "bars" or "dots".';
+            }
         } else {
             config.eventIndicatorStyle = 'bars';
+        }
+        if (config.hasOwnProperty('eventColors')) {
+            if (!Array.isArray(config.eventColors) || (config.eventColors.length === 0)) {
+                throw 'The "config.eventColors" param must be a non-empty array';
+            }
+            for (var i = 0; i < config.eventColors.length; i++) {
+                var color = config.eventColors[i];
+                if (typeof color !== 'string' || !(/^#[0-9a-f]{6}$/.test(color))) {
+                    throw 'Each color in "config.eventColor" must be in hex form (e.g. "#1234ab").';
+                }
+            }
+        } else {
+            config.eventColors = DEFAULT_COLORS;
         }
     };
 
@@ -251,7 +271,7 @@
      * @returns {EventList} representation of the input events as an EventList.
      */
     MultiMonthCalendar.prototype.parseEvents = function (events) {
-        var result = new EventList();
+        var result = new EventList(this.eventColors);
         for (var i = 0; i < events.length; i++) {
             var event = events[i];
             if (!Array.isArray(event)) {
@@ -1008,13 +1028,12 @@
     /**
      * A list of EventViewModels.
      *
+     * @param {array} colors the colors to use when rendering event indicators.
      * @returns {EventList} a list of EventViewModels.
      */
-    var EventList = function () {
+    var EventList = function (colors = DEFAULT_COLORS) {
         this.list = [];
-        // Taken from Sejmometr logo.
-        this.COLORS = ['#62bb46', '#0099da', '#fdb924', '#e23d40', '#993f98',
-            '#4a9536', '#f79433', '#b55594'];
+        this.colors = colors;
     };
 
     /**
@@ -1066,7 +1085,7 @@
      * @returns {EventList} a subset list, with events falling in the passed in range.
      */
     EventList.prototype.getSublistOverlapping = function (range, shouldReindex) {
-        var result = new EventList();
+        var result = new EventList(this.colors);
         for (var i = 0; i < this.list.length; i++) {
             var event = this.list[i].event;
             var rangesOverlapping = [];
@@ -1148,7 +1167,7 @@
                 minUntakenIdx++;
             }
             this.list[i].index = minUntakenIdx;
-            this.list[i].color = this.COLORS[i % this.COLORS.length];
+            this.list[i].color = this.colors[i % this.colors.length];
         }
     };
 
