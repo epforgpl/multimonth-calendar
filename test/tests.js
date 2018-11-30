@@ -289,3 +289,111 @@ QUnit.test("test EventList.getSublistOverlapping_multiRange", function (assert) 
     assert.deepEqual(parts[0].start, C.date(2016, 4, 10).toJSDate());
     assert.deepEqual(parts[0].end, C.date(2016, 4, 10).toJSDate());
 });
+
+QUnit.test("test MultiMonthCalendar.shrinkDayCells_noEventsAndPlaceholder", function (assert) {
+    var C = MultiMonthCalendar;
+    var weekRow = document.createElement("tr");
+    for (var i = 0; i < 7; i++) {
+        var td = document.createElement("td");
+        var dayNumDiv = document.createElement('div'); // Child 0 of each <td>
+        dayNumDiv.innerHTML = i;
+        td.appendChild(dayNumDiv);
+        td.appendChild(document.createElement('div')); // Child 1 of each <td>
+        weekRow.appendChild(td);
+    }
+    C.shrinkDayCells(weekRow, null);
+    for (var i = 0; i < 7; i++) {
+        assert.equal(weekRow.childNodes[i].childNodes.length, 2);
+    }
+});
+
+QUnit.test("test MultiMonthCalendar.shrinkDayCells_3EventsButNotThisWeek", function (assert) {
+    var C = MultiMonthCalendar;
+    var weekRow = document.createElement("tr");
+    for (var i = 0; i < 7; i++) {
+        var td = document.createElement("td");
+        var dayNumDiv = document.createElement('div'); // Child 0 of each <td>
+        dayNumDiv.innerHTML = i;
+        td.appendChild(dayNumDiv);
+        td.appendChild(document.createElement('div')); // Child 1 of each <td>
+        td.appendChild(document.createElement('div')); // Child 2 of each <td>
+        td.appendChild(document.createElement('div')); // Child 3 of each <td>
+        weekRow.appendChild(td);
+    }
+    C.shrinkDayCells(weekRow, 2); // Param "2" means 3 events (indices 0, 1, 2).
+    for (var i = 0; i < 7; i++) {
+        // shrinkDayCells should have cut out two rows of indicators, leaving 2 children.
+        assert.equal(weekRow.childNodes[i].childNodes.length, 2);
+    }
+});
+
+QUnit.test("test MultiMonthCalendar.shrinkDayCells_3EventsOfWhich2ThisWeek", function (assert) {
+    var C = MultiMonthCalendar;
+    var weekRow = document.createElement("tr");
+    for (var i = 0; i < 7; i++) {
+        var td = document.createElement("td");
+        var dayNumDiv = document.createElement('div'); // Child 0 of each <td>
+        dayNumDiv.innerHTML = i;
+        td.appendChild(dayNumDiv);
+        td.appendChild(document.createElement('div')); // Child 1 of each <td>
+        td.appendChild(document.createElement('div')); // Child 2 of each <td>
+        td.appendChild(document.createElement('div')); // Child 3 of each <td>
+        weekRow.appendChild(td);
+    }
+    
+    // 4-th child will have real event in last indicator.
+    weekRow.childNodes[3].removeChild(weekRow.childNodes[3].childNodes[3]);
+    weekRow.childNodes[3].appendChild(C.createNewElement('div', 'event'));
+    
+    // 5-th child will have real events in last two indicators.
+    weekRow.childNodes[4].removeChild(weekRow.childNodes[4].childNodes[3]);
+    weekRow.childNodes[4].removeChild(weekRow.childNodes[4].childNodes[2]);
+    weekRow.childNodes[4].appendChild(C.createNewElement('div', 'event'));
+    weekRow.childNodes[4].appendChild(C.createNewElement('div', 'event'));
+    
+    
+    C.shrinkDayCells(weekRow, 2); // Param "2" means 3 events (indices 0, 1, 2).
+    for (var i = 0; i < 7; i++) {
+        // shrinkDayCells should have cut out one row of indicators, leaving 3 children.
+        assert.equal(weekRow.childNodes[i].childNodes.length, 3);
+    }
+});
+
+QUnit.test("test MultiMonthCalendar.shrinkDayCells_3EventsAllThisWeek", function (assert) {
+    var C = MultiMonthCalendar;
+    var weekRow = document.createElement("tr");
+    for (var i = 0; i < 7; i++) {
+        var td = document.createElement("td");
+        var dayNumDiv = document.createElement('div'); // Child 0 of each <td>
+        dayNumDiv.innerHTML = i;
+        td.appendChild(dayNumDiv);
+        td.appendChild(document.createElement('div')); // Child 1 of each <td>
+        td.appendChild(document.createElement('div')); // Child 2 of each <td>
+        td.appendChild(document.createElement('div')); // Child 3 of each <td>
+        weekRow.appendChild(td);
+    }
+    
+    // 4-th child will have real event in last indicator.
+    weekRow.childNodes[3].removeChild(weekRow.childNodes[3].childNodes[3]);
+    weekRow.childNodes[3].appendChild(C.createNewElement('div', 'event'));
+    
+    // 5-th child will have real events in last two indicators.
+    weekRow.childNodes[4].removeChild(weekRow.childNodes[4].childNodes[3]);
+    weekRow.childNodes[4].removeChild(weekRow.childNodes[4].childNodes[2]);
+    weekRow.childNodes[4].appendChild(C.createNewElement('div', 'event'));
+    weekRow.childNodes[4].appendChild(C.createNewElement('div', 'event'));
+    
+    // 7-th child will have real event in first indicator.
+    weekRow.childNodes[6].removeChild(weekRow.childNodes[6].childNodes[3]);
+    weekRow.childNodes[6].removeChild(weekRow.childNodes[6].childNodes[2]);
+    weekRow.childNodes[6].removeChild(weekRow.childNodes[6].childNodes[1]);
+    weekRow.childNodes[6].appendChild(C.createNewElement('div', 'event'));
+    weekRow.childNodes[6].appendChild(document.createElement('div')); // Empty indicator
+    weekRow.childNodes[6].appendChild(document.createElement('div')); // Empty indicator
+    
+    C.shrinkDayCells(weekRow, 2); // Param "2" means 3 events (indices 0, 1, 2).
+    for (var i = 0; i < 7; i++) {
+        // shrinkDayCells should have cut out no rows of indicators, leaving 4 children.
+        assert.equal(weekRow.childNodes[i].childNodes.length, 4);
+    }
+});
