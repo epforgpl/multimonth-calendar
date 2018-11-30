@@ -449,7 +449,7 @@
      * @returns {Element} the button element.
      */
     MultiMonthCalendar.prototype.createNavButton = function (isForward) {
-        var div = this.createNewElement('div', 'mmc-nav');
+        var div = MultiMonthCalendar.createNewElement('div', 'mmc-nav');
         var span = document.createElement('span');
 
         var _this = this;
@@ -480,7 +480,7 @@
      * @return {Element} the calendar block for a single month.
      */
     MultiMonthCalendar.prototype.createMonthWrapper = function (monthYear, eventList) {
-        var div = this.createNewElement("div", "mmc-month");
+        var div = MultiMonthCalendar.createNewElement("div", "mmc-month");
         div.appendChild(this.createMonthNameWrap(monthYear));
         div.appendChild(this.createMonthTableWrap(monthYear, eventList));
         return div;
@@ -493,7 +493,7 @@
      * @return {Element} a div containing the month-year name.
      */
     MultiMonthCalendar.prototype.createMonthNameWrap = function (monthYear) {
-        var div = this.createNewElement("div", "month-name");
+        var div = MultiMonthCalendar.createNewElement("div", "month-name");
         var span = document.createElement("span");
         span.innerHTML = this.getMonthName(monthYear.month) + " " + monthYear.year;
         div.appendChild(span);
@@ -626,16 +626,77 @@
                     weekRow.appendChild(td);
                     day++;
                 } else {
-                    weekRow.innerHTML += "<td class='mmc-calendar-day other-month'></td>";
+                    var td = document.createElement('td');
+                    td.classList.add('mmc-calendar-day');
+                    td.classList.add('other-month');
+                    weekRow.appendChild(td);
                 }
                 if (day > dayCount) {
                     break;
                 }
             }
+            
+            MultiMonthCalendar.shrinkDayCells(weekRow, maxEventIndex);
             tbody.appendChild(weekRow);
         }
     };
+    
+    /**
+     * In a single calendar week, removes space in each <td> cell corresponding to a day in that
+     * week, if there's no event to show in that space across all the days of that week.
+     * 
+     * For example, if in a given week space is reserved in all <td> cells for 4 events, but only
+     * 1 actually occurs in the week, 3 rows of space (for the other 3 events) could be removed.
+     * 
+     * The purpose of all this is so that the calendar is not bloated vertically if it has e.g.
+     * only one day with e.g. 7 events.
+     * 
+     * @param {object} weekRow HTML <tr> element holding <td> cells for days of a single week.
+     * @param {Number|null} maxEventIndex the maximum index an event could be at in this week 
+     *     (counting 0, 1, 2, 3, 4, ..) or null if there could be no events.
+     * @returns {void}
+     */
+    MultiMonthCalendar.shrinkDayCells = function (weekRow, maxEventIndex) {
+        if (maxEventIndex === null) {
+            return;
+        }
 
+        // Note: in the loop rowIdx goes from maxEventIndex **+ 1** because first child of each 
+        // dayTd is the <div> containing the day number, and <div>'s for events only start after it.
+        var tdRows = null;
+        // For each row above the first (first contains the day number) ..
+        for (var rowIdx = maxEventIndex + 1; rowIdx > 0; rowIdx--) {
+            var canRemoveRow = true;
+            // .. go through all the days of the week ..
+            for (var dayIdx = 0; dayIdx <  7; dayIdx++) {
+                var dayTd = weekRow.childNodes[dayIdx];
+                // .. check if the day <td> cell exists (opposite could happen for days at the
+                // end of table, after end of month), is not empty inside (opposite could happen
+                // for days at the beginning of table, before start of month) ..
+                if (dayTd && (tdRows = dayTd.childNodes) && (tdRows.length > 0)) {
+                    // .. check if either the day <td> cell is too short to be truncated, or
+                    // in the row we're now considering it has an event ..
+                    if ((tdRows.length <= 2) || tdRows[rowIdx].classList.contains('event')) {
+                        // .. if so, prevent the row from being cut out.
+                        canRemoveRow = false;
+                        break;
+                    }
+                }
+            }
+            if (canRemoveRow) {
+                // If the row can be cut out go through all the days of the week ..
+                for (var dayIdx = 0; dayIdx <  7; dayIdx++) {
+                    var dayTd = weekRow.childNodes[dayIdx];
+                    // .. skip the cells corresponding to days before or after the month ..
+                    if (dayTd && (tdRows = dayTd.childNodes) && (tdRows.length > 0)) {
+                        // .. and cut out the child <div> in the current row.
+                        dayTd.removeChild(tdRows[rowIdx]);
+                    }
+                }
+            }
+        }        
+    };
+    
     /**
      * Creates a horizontal bar (an HTML div) in a single table cell, representing one of the events
      * occurring on the day of that cell.
@@ -716,7 +777,7 @@
      * @param {string} className element class name.
      * @return {Element} a created HTML element.
      */
-    MultiMonthCalendar.prototype.createNewElement = function (element, className) {
+    MultiMonthCalendar.createNewElement = function (element, className) {
         var result = document.createElement(element);
         result.classList.add(className);
         return result;
@@ -1315,7 +1376,7 @@
     MultiMonthCalendar.date = function (year, month, day) {
         return new CalDate(year, month, day);
     };
-
+    
 
 
     window.MultiMonthCalendar = MultiMonthCalendar;
