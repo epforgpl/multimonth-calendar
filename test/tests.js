@@ -343,13 +343,13 @@ QUnit.test("test MultiMonthCalendar.shrinkDayCells_3EventsOfWhich2ThisWeek", fun
     
     // 4-th child will have real event in last indicator.
     weekRow.childNodes[3].removeChild(weekRow.childNodes[3].childNodes[3]);
-    weekRow.childNodes[3].appendChild(C.createNewElement('div', 'event'));
+    weekRow.childNodes[3].appendChild(C.createNewElement('div', ['event']));
     
     // 5-th child will have real events in last two indicators.
     weekRow.childNodes[4].removeChild(weekRow.childNodes[4].childNodes[3]);
     weekRow.childNodes[4].removeChild(weekRow.childNodes[4].childNodes[2]);
-    weekRow.childNodes[4].appendChild(C.createNewElement('div', 'event'));
-    weekRow.childNodes[4].appendChild(C.createNewElement('div', 'event'));
+    weekRow.childNodes[4].appendChild(C.createNewElement('div', ['event']));
+    weekRow.childNodes[4].appendChild(C.createNewElement('div', ['event']));
     
     
     C.shrinkDayCells(weekRow, 2); // Param "2" means 3 events (indices 0, 1, 2).
@@ -375,19 +375,19 @@ QUnit.test("test MultiMonthCalendar.shrinkDayCells_3EventsAllThisWeek", function
     
     // 4-th child will have real event in last indicator.
     weekRow.childNodes[3].removeChild(weekRow.childNodes[3].childNodes[3]);
-    weekRow.childNodes[3].appendChild(C.createNewElement('div', 'event'));
+    weekRow.childNodes[3].appendChild(C.createNewElement('div', ['event']));
     
     // 5-th child will have real events in last two indicators.
     weekRow.childNodes[4].removeChild(weekRow.childNodes[4].childNodes[3]);
     weekRow.childNodes[4].removeChild(weekRow.childNodes[4].childNodes[2]);
-    weekRow.childNodes[4].appendChild(C.createNewElement('div', 'event'));
-    weekRow.childNodes[4].appendChild(C.createNewElement('div', 'event'));
+    weekRow.childNodes[4].appendChild(C.createNewElement('div', ['event']));
+    weekRow.childNodes[4].appendChild(C.createNewElement('div', ['event']));
     
     // 7-th child will have real event in first indicator.
     weekRow.childNodes[6].removeChild(weekRow.childNodes[6].childNodes[3]);
     weekRow.childNodes[6].removeChild(weekRow.childNodes[6].childNodes[2]);
     weekRow.childNodes[6].removeChild(weekRow.childNodes[6].childNodes[1]);
-    weekRow.childNodes[6].appendChild(C.createNewElement('div', 'event'));
+    weekRow.childNodes[6].appendChild(C.createNewElement('div', ['event']));
     weekRow.childNodes[6].appendChild(document.createElement('div')); // Empty indicator
     weekRow.childNodes[6].appendChild(document.createElement('div')); // Empty indicator
     

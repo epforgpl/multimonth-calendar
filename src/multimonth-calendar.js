@@ -52,6 +52,9 @@
      * @param {array} config.eventColors (optional) a list of colors, in hex notation 
      *     (e.g. '#ffffff') that will be used to render event indicators. If not provided, defaults
      *     to DEFAULT_COLORS constant.
+     * @param {boolean} hasMoveByYearButtons (optional) whether in addition to normal navs moving
+     *     the display back/forward by a few months at most, the calendar should have additional
+     *     buttons moving the display back/forward by a year. If not provided, defaults to false.
      * @returns {MultiMonthCalendar} an instance of the calendar.
      */
     var MultiMonthCalendar = function (config) {
@@ -84,6 +87,7 @@
         this.callback = config.eventClickCallback;
         this.weekStartsOn = config.weekStartsOn;
         this.eventIndicatorStyle = config.eventIndicatorStyle;
+        this.hasMoveByYearButtons = config.hasMoveByYearButtons;
         // Breakpoints around which number of months shown can change. Must be increasing.
         // Calculated like this:
         // - each of the two navs has about 5px for the left/right symbol plus 16px horizontal 
@@ -261,6 +265,13 @@
         } else {
             config.eventColors = DEFAULT_COLORS;
         }
+        if (config.hasOwnProperty('hasMoveByYearButtons')) {
+            if (typeof config.hasMoveByYearButtons !== 'boolean') {
+                throw 'The "config.hasMoveByYearButtons" param must be a boolean';
+            }
+        } else {
+            config.hasMoveByYearButtons = false;
+        }
     };
 
     /**
@@ -432,8 +443,14 @@
     MultiMonthCalendar.prototype.renderCalendar = function () {
         var inner = document.createElement('div');
 
-        // Back button.
-        inner.appendChild(this.createNavButton(false));
+        // Back button(s).
+        var navWrapper = MultiMonthCalendar.createNewElement('div', 
+            ['mmc-nav', this.hasMoveByYearButtons ? 'two-buttons' : 'one-button']);
+        if (this.hasMoveByYearButtons) {
+            navWrapper.appendChild(this.createNavButton(false, true));
+        }
+        navWrapper.appendChild(this.createNavButton(false, false));
+        inner.appendChild(navWrapper);
 
         // Monthly calendars.
         var events = this.getEventsOverlappingCalendar();
@@ -441,8 +458,14 @@
             inner.appendChild(this.createMonthWrapper(this.start.shift(i), events));
         }
 
-        // Forward button.
-        inner.appendChild(this.createNavButton(true));
+        // Forward button(s).
+        navWrapper = MultiMonthCalendar.createNewElement('div', 
+            ['mmc-nav', this.hasMoveByYearButtons ? 'two-buttons' : 'one-button']);
+        if (this.hasMoveByYearButtons) {
+            navWrapper.appendChild(this.createNavButton(true, true));
+        }
+        navWrapper.appendChild(this.createNavButton(true, false));
+        inner.appendChild(navWrapper);
 
         var container = document.getElementById(this.containerId);
         container.classList.add('multimonth-calendar');
@@ -468,13 +491,14 @@
      * @param {boolean} isForward whether the button points forward or backwards.
      * @returns {Element} the button element.
      */
-    MultiMonthCalendar.prototype.createNavButton = function (isForward) {
-        var div = MultiMonthCalendar.createNewElement('div', 'mmc-nav');
+    MultiMonthCalendar.prototype.createNavButton = function (isForward, isYearly) {
+        var div = MultiMonthCalendar.createNewElement('div', []);
         var span = document.createElement('span');
 
         var _this = this;
         span.onclick = function() {
-            var newStart = _this.start.shift((isForward ? 1 : (-1)) * _this.count);
+            var numMonthsToGo = isYearly ? 12 : _this.count;
+            var newStart = _this.start.shift((isForward ? 1 : (-1)) * numMonthsToGo);
             // Prevent going further back than backLimit.
             if (MonthYear.compare(_this.backLimit, newStart) > 0) {
                 newStart = _this.backLimit;
@@ -486,7 +510,9 @@
             _this.start = newStart;
             _this.rerenderCalendar();
         };
-        span.innerHTML = (isForward ? '&#8250' : '&#8249') + ';';
+        span.innerHTML = isYearly
+                ? (isForward ? '&#187;' : '&#171;')
+                : (isForward ? '&#8250;' : '&#8249;');
         div.appendChild(span);
         return div;
     };
@@ -500,7 +526,7 @@
      * @return {Element} the calendar block for a single month.
      */
     MultiMonthCalendar.prototype.createMonthWrapper = function (monthYear, eventList) {
-        var div = MultiMonthCalendar.createNewElement("div", "mmc-month");
+        var div = MultiMonthCalendar.createNewElement("div", ["mmc-month"]);
         div.appendChild(this.createMonthNameWrap(monthYear));
         div.appendChild(this.createMonthTableWrap(monthYear, eventList));
         return div;
@@ -513,7 +539,7 @@
      * @return {Element} a div containing the month-year name.
      */
     MultiMonthCalendar.prototype.createMonthNameWrap = function (monthYear) {
-        var div = MultiMonthCalendar.createNewElement("div", "month-name");
+        var div = MultiMonthCalendar.createNewElement("div", ["month-name"]);
         var span = document.createElement("span");
         span.innerHTML = this.getMonthName(monthYear.month) + " " + monthYear.year;
         div.appendChild(span);
@@ -601,8 +627,7 @@
             for (var i = this.weekStartsOn; i < this.weekStartsOn + 7; i++) {
                 if (monthYear.getWeekDay(day) === (i % 7)) {
                     // Create <td> for the day.
-                    var td = document.createElement("td");
-                    td.classList.add('mmc-calendar-day');
+                    var td = MultiMonthCalendar.createNewElement("td", ['mmc-calendar-day']);
                     // Perhaps indicate weekend.
                     var isWeekend = (((i % 7) === 0) || ((i % 7) === 6));
                     if (isWeekend) {
@@ -634,10 +659,8 @@
                     td.appendChild(dayNumDiv);
                     // Either add placeholder (giving the <td> some height), or event indicators.
                     if (maxEventIndex === null) {
-                        var placeholder = document.createElement('div');
-                        placeholder.classList.add('calendar-day-placeholder');
-                        placeholder.classList.add(this.eventIndicatorStyle);
-                        td.appendChild(placeholder);
+                        td.appendChild(MultiMonthCalendar.createNewElement('div', 
+                            ['calendar-day-placeholder', this.eventIndicatorStyle]));
                     } else {
                         for (var j = maxEventIndex; j >= 0; j--) {
                             td.appendChild(this.createEventIndicator(eventsOnDay, j));
@@ -729,9 +752,8 @@
      *     on a single day.
      */
     MultiMonthCalendar.prototype.createEventIndicator = function (eventsOnDay, indicatorIndex) {
-        var eventIndicator = document.createElement('div');
-        eventIndicator.classList.add('calendar-day-indicator');
-        eventIndicator.classList.add(this.eventIndicatorStyle);
+        var eventIndicator = MultiMonthCalendar.createNewElement('div', 
+            ['calendar-day-indicator', this.eventIndicatorStyle]);
         // Find event (if any) that matches this indicator's index.
         for (var i = 0; i < eventsOnDay.length(); i++) {
             var eventViewModel = eventsOnDay.get(i);
@@ -794,12 +816,14 @@
      * Create new HTML element with a given CSS class.
      *
      * @param {string} element element tag name.
-     * @param {string} className element class name.
+     * @param {array} classNames array of CSS class names to add to the element.
      * @return {Element} a created HTML element.
      */
-    MultiMonthCalendar.createNewElement = function (element, className) {
+    MultiMonthCalendar.createNewElement = function (element, classNames) {
         var result = document.createElement(element);
-        result.classList.add(className);
+        for (var i = 0; i < classNames.length; i++) {
+            result.classList.add(classNames[i]);
+        }
         return result;
     };
 
